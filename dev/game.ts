@@ -1,10 +1,12 @@
 class Game {
 	private static instance: Game
 	private character: Character
+	private arrows: Array<Arrow>
 
 	private constructor() {
 		console.log("Game running!")
 		this.character = new Character()
+		this.arrows = new Array<Arrow>()
 
 		this.gameLoop()
 	}
@@ -16,10 +18,14 @@ class Game {
 		return Game.instance
 	}
 
-	private gameLoop():void {
+	private gameLoop(): void {
 		this.character.update()
 		
 		requestAnimationFrame(() => this.gameLoop())
+	}
+
+	public addArrow(a: Arrow): void {
+		this.arrows.push(a)
 	}
 
 }

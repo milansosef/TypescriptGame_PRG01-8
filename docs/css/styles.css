@@ -27,3 +27,8 @@ character {
 	width: 512px; height: 512px;
 	background-image: url(../images/archer.png);
 }
+
+arrow {
+	width: 512px; height: 512px;
+	background-image: url(../images/Arrow.png);
+}

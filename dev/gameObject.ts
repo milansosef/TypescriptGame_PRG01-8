@@ -10,15 +10,18 @@ class GameObject {
 
 		this.posy = 0;
 		this.posx = 0;
-
 	}
 
 	public getRect(): ClientRect {
 		return this.element.getBoundingClientRect()
 	}
 
-	public update() {
+	public update(): void {
 		this.element.style.transform = `translate(${this.posx}px, ${this.posy}px)`
+	}
+
+	public removeMe(): void {
+		this.element.remove()
 	}
 
 }
