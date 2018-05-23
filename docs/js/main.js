@@ -43,73 +43,73 @@ var Character = (function (_super) {
     __extends(Character, _super);
     function Character() {
         var _this = _super.call(this, "character") || this;
-        _this.leftSpeed = 0;
-        _this.rightSpeed = 0;
-        _this.downSpeed = 0;
-        _this.upSpeed = 0;
+        _this.left = false;
+        _this.right = false;
+        _this.up = false;
+        _this.x_velocity = 0;
+        _this.y_velocity = 0;
         _this.isReloading = false;
+        _this.isJumping = false;
         _this.posx = 0;
-        _this.posy = 300;
-        window.addEventListener("keydown", function (e) { return _this.onKeyDown(e); });
-        window.addEventListener("keyup", function (e) { return _this.onKeyUp(e); });
+        _this.posy = 0;
+        window.addEventListener("keydown", function (e) { return _this.keyListener(e); });
+        window.addEventListener("keyup", function (e) { return _this.keyListener(e); });
         return _this;
     }
     Character.prototype.update = function () {
         _super.prototype.update.call(this);
-        this.posx += this.rightSpeed;
-        this.posx -= this.leftSpeed;
-        this.posy -= this.upSpeed;
-        this.posy += this.downSpeed;
+        this.movementController();
     };
-    Character.prototype.schoot = function () {
+    Character.prototype.shoot = function () {
         var g = Game.getInstance();
         g.addArrow(new Arrow());
     };
+    Character.prototype.keyListener = function (event) {
+        var key_state = (event.type == "keydown") ? true : false;
+        switch (event.keyCode) {
+            case 32:
+                this.up = key_state;
+                console.log(key_state);
+                break;
+            case 65:
+                this.left = key_state;
+                console.log("left");
+                break;
+            case 68:
+                console.log("right");
+                this.right = key_state;
+                break;
+        }
+    };
+    Character.prototype.movementController = function () {
+        if (this.up && this.isJumping == false) {
+            this.y_velocity -= 20;
+            this.isJumping = true;
+        }
+        if (this.left) {
+            this.x_velocity -= 0.5;
+        }
+        if (this.right) {
+            this.x_velocity += 0.5;
+        }
+        this.y_velocity += 1.5;
+        this.posx += this.x_velocity;
+        this.posy += this.y_velocity;
+        this.x_velocity *= 0.9;
+        this.y_velocity *= 0.9;
+        if (this.posy > window.innerHeight - 16 - 512) {
+            this.isJumping = false;
+            this.posy = window.innerHeight - 16 - 512;
+            this.y_velocity = 0;
+        }
+    };
     Character.prototype.removeMe = function () {
-        var _this = this;
         _super.prototype.removeMe.call(this);
-        window.removeEventListener("keydown", function (e) { return _this.onKeyDown(e); });
-        window.removeEventListener("keyup", function (e) { return _this.onKeyUp(e); });
-    };
-    Character.prototype.onKeyDown = function (event) {
-        switch (event.keyCode) {
-            case 32:
-                console.log("jumping!");
-                this.schoot();
-                this.upSpeed = 5;
-                break;
-            case 83:
-                this.downSpeed = 5;
-                break;
-            case 65:
-                this.leftSpeed = 5;
-                break;
-            case 68:
-                this.rightSpeed = 5;
-                break;
-        }
-    };
-    Character.prototype.onKeyUp = function (event) {
-        switch (event.keyCode) {
-            case 32:
-                this.upSpeed = 0;
-                break;
-            case 83:
-                this.downSpeed = 0;
-                break;
-            case 65:
-                this.leftSpeed = 0;
-                break;
-            case 68:
-                this.rightSpeed = 0;
-                break;
-        }
     };
     return Character;
 }(GameObject));
 var Game = (function () {
     function Game() {
-        console.log("Game running!");
         this.character = new Character();
         this.arrows = new Array();
         this.gameLoop();
