@@ -5,6 +5,7 @@ class GameObject {
 	protected element: HTMLElement
 	protected posy: number
 	protected posx: number
+	protected rotation: number
 
 	constructor(e: string, imgSource:string) {
 		this.element = document.createElement(e)
@@ -18,6 +19,7 @@ class GameObject {
 
 		this.posy = 0;
 		this.posx = 0;
+		this.rotation = 0;
 	}
 
 	public getRect(): ClientRect {
@@ -29,7 +31,7 @@ class GameObject {
 		// this.context.translate(this.posx, this.posy);
 		// this.context.drawImage(this.img, this.posx, this.posy, 512, 512);
 
-		this.element.style.transform = `translate(${this.posx}px, ${this.posy}px)`
+		this.element.style.transform = `translate(${this.posx}px, ${this.posy}px) rotate(${this.rotation}deg)`
 	}
 
 	public removeMe(): void {
