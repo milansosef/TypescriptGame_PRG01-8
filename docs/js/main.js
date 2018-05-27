@@ -16,12 +16,13 @@ var GameObject = (function () {
         foreground.appendChild(this.element);
         this.posy = 0;
         this.posx = 0;
+        this.rotation = 0;
     }
     GameObject.prototype.getRect = function () {
         return this.element.getBoundingClientRect();
     };
     GameObject.prototype.update = function () {
-        this.element.style.transform = "translate(" + this.posx + "px, " + this.posy + "px)";
+        this.element.style.transform = "translate(" + this.posx + "px, " + this.posy + "px) rotate(" + this.rotation + "deg)";
     };
     GameObject.prototype.removeMe = function () {
         this.element.remove();
@@ -32,15 +33,28 @@ var Arrow = (function (_super) {
     __extends(Arrow, _super);
     function Arrow(character_x, character_y, aimAngle) {
         var _this = _super.call(this, "arrow", './images/Arrow.png') || this;
-        _this.posx = character_y;
-        _this.posy = character_x;
-        _this.angle = aimAngle;
-        _this.speed_x = Math.cos(_this.angle / 180 * Math.PI) * 10;
-        _this.speed_y = Math.sin(_this.angle / 180 * Math.PI) * 10;
+        _this.posx = character_x;
+        _this.posy = character_y;
+        _this.rotation = aimAngle;
+        _this.speed_x = Math.cos(_this.rotation / 180 * Math.PI) * 10;
+        _this.speed_y = Math.sin(_this.rotation / 180 * Math.PI) * 10;
+        console.log('rotation: ' + _this.rotation);
         return _this;
     }
     Arrow.prototype.update = function () {
         _super.prototype.update.call(this);
+        console.log("rotation = " + this.rotation);
+        if (this.rotation > -90 && this.rotation < 90) {
+            this.rotation++;
+        }
+        else if ((this.rotation < -90 && this.rotation >= -181) || (this.rotation <= 180 && this.rotation > 90)) {
+            if (this.rotation < -180) {
+                this.rotation = 180;
+            }
+            this.rotation--;
+        }
+        this.speed_x = Math.cos(this.rotation / 180 * Math.PI) * 10;
+        this.speed_y = Math.sin(this.rotation / 180 * Math.PI) * 10;
         this.posx += this.speed_x;
         this.posy += this.speed_y;
     };
@@ -79,8 +93,8 @@ var Character = (function (_super) {
         var g = Game.getInstance();
         var mouseX = event.clientX - g.canvas.getBoundingClientRect().left;
         var mouseY = event.clientY - g.canvas.getBoundingClientRect().top;
-        mouseX -= this.posx;
-        mouseY -= this.posy;
+        mouseX -= this.posx + this.getRect().width / 2;
+        mouseY -= this.posy + this.getRect().height / 2;
         this.aimAngle = Math.atan2(mouseY, mouseX) / Math.PI * 180;
     };
     Character.prototype.keyListener = function (event) {
@@ -127,55 +141,6 @@ var Character = (function (_super) {
     };
     return Character;
 }(GameObject));
-var ControlledByPlayer = (function () {
-    function ControlledByPlayer(c) {
-        this.left = false;
-        this.right = false;
-        this.up = false;
-        this.isJumping = false;
-        this.character = c;
-    }
-    ControlledByPlayer.prototype.movementController = function () {
-        if (this.up && this.isJumping == false) {
-            this.y_speed -= 20;
-            this.isJumping = true;
-        }
-        if (this.left) {
-            this.x_speed -= 0.5;
-        }
-        if (this.right) {
-            this.x_speed += 0.5;
-        }
-        this.y_speed += 1.5;
-        this.posx += this.x_speed;
-        this.posy += this.y_speed;
-        this.x_speed *= 0.9;
-        this.y_speed *= 0.9;
-        if (this.posy > window.innerHeight - 16 - 512) {
-            this.isJumping = false;
-            this.posy = window.innerHeight - 16 - 512;
-            this.y_speed = 0;
-        }
-    };
-    ControlledByPlayer.prototype.keyListener = function (event) {
-        var key_state = (event.type == "keydown") ? true : false;
-        switch (event.keyCode) {
-            case 32:
-                this.up = key_state;
-                console.log(key_state);
-                break;
-            case 65:
-                this.left = key_state;
-                console.log("left");
-                break;
-            case 68:
-                console.log("right");
-                this.right = key_state;
-                break;
-        }
-    };
-    return ControlledByPlayer;
-}());
 var Game = (function () {
     function Game() {
         this.canvas = document.getElementById('canvas');

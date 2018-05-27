@@ -41,8 +41,8 @@ class Character extends GameObject {
 		let mouseX = event.clientX - g.canvas.getBoundingClientRect().left
 		let mouseY = event.clientY - g.canvas.getBoundingClientRect().top
 
-		mouseX -= this.posx
-		mouseY -= this.posy
+		mouseX -= this.posx + this.getRect().width / 2
+		mouseY -= this.posy + this.getRect().height / 2
 
 		this.aimAngle = Math.atan2(mouseY, mouseX) / Math.PI * 180
 	}
