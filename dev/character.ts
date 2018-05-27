@@ -4,16 +4,17 @@ class Character extends GameObject {
 	private left: boolean = false
 	private right: boolean = false
 	private up: boolean = false
-	private x_velocity: number = 0
-	private y_velocity: number = 0
+	public x_speed: number = 0
+	public y_speed: number = 0
+	private aimAngle: number = 0
 	private isReloading: boolean = false
 	private isJumping: boolean = false
 
 	constructor() {
-		super("character")
-		this.posx = 0
-		this.posy = 0
-
+		super("character", './images/archer.png')
+		
+		window.addEventListener("mousemove", (e: MouseEvent) => this.onMouseMove(e))
+		window.addEventListener("click", (e: MouseEvent) => this.onClickListener(e))
 		window.addEventListener("keydown", (e: KeyboardEvent) => this.keyListener(e))
 		window.addEventListener("keyup", (e: KeyboardEvent) => this.keyListener(e))
 	}
@@ -26,7 +27,24 @@ class Character extends GameObject {
 	private shoot(): void {
 		//Shoot an arrow
 		let g = Game.getInstance()
-		g.addArrow(new Arrow())
+		g.addArrow(new Arrow(this.posx, this.posy, this.aimAngle))
+	}
+
+	private onClickListener(event: MouseEvent): void {
+		this.shoot()
+	}
+
+	private onMouseMove(event: MouseEvent): void {
+		let g = Game.getInstance()
+
+		//TODO: Fix bullet starting and shooting direction
+		let mouseX = event.clientX - g.canvas.getBoundingClientRect().left
+		let mouseY = event.clientY - g.canvas.getBoundingClientRect().top
+
+		mouseX -= this.posx
+		mouseY -= this.posy
+
+		this.aimAngle = Math.atan2(mouseY, mouseX) / Math.PI * 180
 	}
 
 	private keyListener(event: KeyboardEvent): void {
@@ -53,28 +71,28 @@ class Character extends GameObject {
 
 	private movementController(): void {
 		if (this.up && this.isJumping == false) {
-			this.y_velocity -= 20
+			this.y_speed -= 20
 			this.isJumping = true
 		}
 
 		if (this.left) {
-			this.x_velocity -= 0.5
+			this.x_speed -= 0.5
 		}
 
 		if (this.right) {
-			this.x_velocity += 0.5
+			this.x_speed += 0.5
 		}
 
-		this.y_velocity += 1.5 // gravity
-		this.posx += this.x_velocity
-		this.posy += this.y_velocity
-		this.x_velocity *= 0.9 // friction
-		this.y_velocity *= 0.9 // friction
+		this.y_speed += 1.5 // gravity
+		this.posx += this.x_speed
+		this.posy += this.y_speed
+		this.x_speed *= 0.9 // friction
+		this.y_speed *= 0.9 // friction
 
 		if (this.posy > window.innerHeight - 16 - 512) {
 			this.isJumping = false
 			this.posy = window.innerHeight - 16 - 512
-			this.y_velocity = 0
+			this.y_speed = 0
 		}
 	}
 
