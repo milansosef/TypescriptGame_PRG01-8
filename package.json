@@ -1,0 +1,28 @@
+{
+  "name": "typescriptgame_prg01-8",
+  "version": "1.0.0",
+  "description": "Archer game with typescript.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/milansosef/TypescriptGame_PRG01-8.git"
+  },
+  "author": "Milan Sosef",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/milansosef/TypescriptGame_PRG01-8/issues"
+  },
+  "homepage": "https://github.com/milansosef/TypescriptGame_PRG01-8#readme",
+  "dependencies": {
+    "pixi.js": "^4.8.0"
+  },
+  "devDependencies": {
+    "@types/pixi.js": "^4.7.3"
+  }
+}

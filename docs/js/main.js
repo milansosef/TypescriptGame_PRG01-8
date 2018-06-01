@@ -10,68 +10,60 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 var GameObject = (function () {
-    function GameObject(e, imgSource) {
-        this.element = document.createElement(e);
-        var foreground = document.getElementsByTagName("foreground")[0];
-        foreground.appendChild(this.element);
-        this.posy = 0;
-        this.posx = 0;
+    function GameObject(img) {
+        this.sprite = new PIXI.Sprite();
+        this.x_speed = 0;
+        this.y_speed = 0;
+        this.imgSource = img;
         this.rotation = 0;
     }
+    GameObject.prototype.initTexture = function (stage) {
+        this.sprite.texture = Game.PIXI.loader.resources[this.imgSource].texture;
+        stage.addChild(this.sprite);
+    };
     GameObject.prototype.getRect = function () {
-        return this.element.getBoundingClientRect();
+        return this.sprite.getBounds();
     };
     GameObject.prototype.update = function () {
-        this.element.style.transform = "translate(" + this.posx + "px, " + this.posy + "px) rotate(" + this.rotation + "deg)";
     };
     GameObject.prototype.removeMe = function () {
-        this.element.remove();
     };
     return GameObject;
 }());
 var Arrow = (function (_super) {
     __extends(Arrow, _super);
     function Arrow(character_x, character_y, aimAngle) {
-        var _this = _super.call(this, "arrow", './images/Arrow.png') || this;
-        _this.posx = character_x;
-        _this.posy = character_y;
-        _this.rotation = aimAngle;
-        _this.speed_x = Math.cos(_this.rotation / 180 * Math.PI) * 10;
-        _this.speed_y = Math.sin(_this.rotation / 180 * Math.PI) * 10;
-        console.log('rotation: ' + _this.rotation);
+        var _this = _super.call(this, './images/Arrow.png') || this;
+        _this.sprite.x = character_x;
+        _this.sprite.y = character_y;
+        _this.sprite.width = 200;
+        _this.sprite.height = 200;
+        _this.sprite.rotation = aimAngle;
+        _this.x_speed = Math.cos(_this.sprite.rotation / 180 * Math.PI) * 10;
+        _this.y_speed = Math.sin(_this.sprite.rotation / 180 * Math.PI) * 10;
         return _this;
     }
     Arrow.prototype.update = function () {
         _super.prototype.update.call(this);
-        console.log("rotation = " + this.rotation);
-        if (this.rotation > -90 && this.rotation < 90) {
-            this.rotation++;
-        }
-        else if ((this.rotation < -90 && this.rotation >= -181) || (this.rotation <= 180 && this.rotation > 90)) {
-            if (this.rotation < -180) {
-                this.rotation = 180;
-            }
-            this.rotation--;
-        }
-        this.speed_x = Math.cos(this.rotation / 180 * Math.PI) * 10;
-        this.speed_y = Math.sin(this.rotation / 180 * Math.PI) * 10;
-        this.posx += this.speed_x;
-        this.posy += this.speed_y;
+        this.x_speed = Math.cos(this.sprite.rotation / 180 * Math.PI) * 10;
+        this.y_speed = Math.sin(this.sprite.rotation / 180 * Math.PI) * 10;
+        this.sprite.x += this.x_speed;
+        this.sprite.y += this.y_speed;
     };
     return Arrow;
 }(GameObject));
 var Character = (function (_super) {
     __extends(Character, _super);
     function Character() {
-        var _this = _super.call(this, "character", './images/archer.png') || this;
+        var _this = _super.call(this, './images/archer.png') || this;
         _this.left = false;
         _this.right = false;
         _this.up = false;
-        _this.x_speed = 0;
-        _this.y_speed = 0;
         _this.aimAngle = 0;
         _this.isReloading = false;
         _this.isJumping = false;
+        _this.sprite.width = 200;
+        _this.sprite.height = 200;
         window.addEventListener("mousemove", function (e) { return _this.onMouseMove(e); });
         window.addEventListener("click", function (e) { return _this.onClickListener(e); });
         window.addEventListener("keydown", function (e) { return _this.keyListener(e); });
@@ -84,17 +76,19 @@ var Character = (function (_super) {
     };
     Character.prototype.shoot = function () {
         var g = Game.getInstance();
-        g.addArrow(new Arrow(this.posx, this.posy, this.aimAngle));
+        g.addArrow(new Arrow(this.sprite.x, this.sprite.y, this.aimAngle));
+        console.log("PIXI rotation = " + this.sprite.rotation);
+        console.log("AIMAngle = " + this.aimAngle);
     };
     Character.prototype.onClickListener = function (event) {
         this.shoot();
     };
     Character.prototype.onMouseMove = function (event) {
         var g = Game.getInstance();
-        var mouseX = event.clientX - g.canvas.getBoundingClientRect().left;
-        var mouseY = event.clientY - g.canvas.getBoundingClientRect().top;
-        mouseX -= this.posx + this.getRect().width / 2;
-        mouseY -= this.posy + this.getRect().height / 2;
+        var mouseX = event.clientX;
+        var mouseY = event.clientY;
+        mouseX -= this.sprite.x + this.getRect().width / 2;
+        mouseY -= this.sprite.y + this.getRect().height / 2;
         this.aimAngle = Math.atan2(mouseY, mouseX) / Math.PI * 180;
     };
     Character.prototype.keyListener = function (event) {
@@ -126,13 +120,13 @@ var Character = (function (_super) {
             this.x_speed += 0.5;
         }
         this.y_speed += 1.5;
-        this.posx += this.x_speed;
-        this.posy += this.y_speed;
+        this.sprite.x += this.x_speed;
+        this.sprite.y += this.y_speed;
         this.x_speed *= 0.9;
         this.y_speed *= 0.9;
-        if (this.posy > window.innerHeight - 16 - 512) {
+        if (this.sprite.y > window.innerHeight - 16 - 512) {
             this.isJumping = false;
-            this.posy = window.innerHeight - 16 - 512;
+            this.sprite.y = window.innerHeight - 16 - 512;
             this.y_speed = 0;
         }
     };
@@ -143,11 +137,19 @@ var Character = (function (_super) {
 }(GameObject));
 var Game = (function () {
     function Game() {
-        this.canvas = document.getElementById('canvas');
-        this.context = this.canvas.getContext("2d");
+        var _this = this;
+        this.background = new PIXI.Sprite();
+        Game.PIXI = new PIXI.Application({ width: Game.canvasWidth, height: Game.canvasHeigth });
+        document.body.appendChild(Game.PIXI.view);
         this.character = new Character();
         this.arrows = new Array();
-        this.gameLoop();
+        Game.PIXI.loader
+            .add([
+            "./images/bg.png",
+            "./images/archer.png",
+            "./images/Arrow.png"
+        ])
+            .load(function () { return _this.setup(); });
     }
     Game.getInstance = function () {
         if (!Game.instance) {
@@ -155,18 +157,27 @@ var Game = (function () {
         }
         return Game.instance;
     };
-    Game.prototype.gameLoop = function () {
+    Game.prototype.setup = function () {
         var _this = this;
+        this.background.texture = Game.PIXI.loader.resources["./images/bg.png"].texture;
+        Game.PIXI.stage.addChild(this.background);
+        this.character.initTexture(Game.PIXI.stage);
+        Game.PIXI.ticker.add(function () { return _this.gameLoop(); });
+    };
+    Game.prototype.gameLoop = function () {
         this.character.update();
         for (var _i = 0, _a = this.arrows; _i < _a.length; _i++) {
             var a = _a[_i];
             a.update();
         }
-        requestAnimationFrame(function () { return _this.gameLoop(); });
+        Game.PIXI.renderer.render(Game.PIXI.stage);
     };
     Game.prototype.addArrow = function (a) {
         this.arrows.push(a);
+        a.initTexture(Game.PIXI.stage);
     };
+    Game.canvasWidth = 1280;
+    Game.canvasHeigth = 768;
     return Game;
 }());
 window.addEventListener("load", function () {

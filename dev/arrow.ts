@@ -1,42 +1,41 @@
 /// <reference path="./gameObject" />
 
 class Arrow extends GameObject {
-	private speed_x: number
-	private speed_y: number
+	constructor(character_x: number, character_y: number, aimAngle: number) {
+		super('./images/Arrow.png')
+		this.sprite.x = character_x
+		this.sprite.y = character_y
 
+		this.sprite.width = 200
+		this.sprite.height = 200
 
-	constructor(character_x: number, character_y: number, aimAngle:number) {
-		super("arrow", './images/Arrow.png')
-		this.posx = character_x
-		this.posy = character_y
-		
-		this.rotation = aimAngle
-		this.speed_x = Math.cos(this.rotation / 180 * Math.PI) * 10
-		this.speed_y = Math.sin(this.rotation / 180 * Math.PI) * 10
+		this.sprite.rotation = aimAngle
+		this.x_speed = Math.cos(this.sprite.rotation / 180 * Math.PI) * 10
+		this.y_speed = Math.sin(this.sprite.rotation / 180 * Math.PI) * 10
 
-		console.log('rotation: '+this.rotation)
+		// console.log('sprite.rotation: ' + this.sprite.rotation)
 	}
 
 	update() {
 		super.update()
 
 		// See if arrow is shot left or right
-		console.log( "rotation = "+this.rotation)
+		// console.log("sprite.rotation = " + this.sprite.rotation)
 
 		// Fall to right
-		if (this.rotation > -90 && this.rotation < 90) {
-			this.rotation++
-		} 
-		else if ((this.rotation < -90 && this.rotation >= -181) || (this.rotation <= 180 && this.rotation > 90)){
-			if (this.rotation < -180) {
-				this.rotation = 180
-			}
-			this.rotation--
-		}
+		// if (this.sprite.rotation > -90 && this.sprite.rotation < 90) {
+		// 	this.sprite.rotation++
+		// }
+		// else if ((this.sprite.rotation < -90 && this.sprite.rotation >= -181) || (this.sprite.rotation <= 180 && this.sprite.rotation > 90)) {
+		// 	if (this.sprite.rotation < -180) {
+		// 		this.sprite.rotation = 180
+		// 	}
+		// 	this.sprite.rotation--
+		// }
 
-		this.speed_x = Math.cos(this.rotation / 180 * Math.PI) * 10
-		this.speed_y = Math.sin(this.rotation / 180 * Math.PI) * 10
-		this.posx += this.speed_x;
-		this.posy += this.speed_y;
+		this.x_speed = Math.cos(this.sprite.rotation / 180 * Math.PI) * 10
+		this.y_speed = Math.sin(this.sprite.rotation / 180 * Math.PI) * 10
+		this.sprite.x += this.x_speed;
+		this.sprite.y += this.y_speed;
 	}
 }

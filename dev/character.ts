@@ -4,15 +4,16 @@ class Character extends GameObject {
 	private left: boolean = false
 	private right: boolean = false
 	private up: boolean = false
-	public x_speed: number = 0
-	public y_speed: number = 0
 	private aimAngle: number = 0
 	private isReloading: boolean = false
 	private isJumping: boolean = false
 
 	constructor() {
-		super("character", './images/archer.png')
-		
+		super('./images/archer.png')
+
+		this.sprite.width = 200
+		this.sprite.height = 200
+
 		window.addEventListener("mousemove", (e: MouseEvent) => this.onMouseMove(e))
 		window.addEventListener("click", (e: MouseEvent) => this.onClickListener(e))
 		window.addEventListener("keydown", (e: KeyboardEvent) => this.keyListener(e))
@@ -27,7 +28,9 @@ class Character extends GameObject {
 	private shoot(): void {
 		//Shoot an arrow
 		let g = Game.getInstance()
-		g.addArrow(new Arrow(this.posx, this.posy, this.aimAngle))
+		g.addArrow(new Arrow(this.sprite.x, this.sprite.y, this.aimAngle))
+		console.log("PIXI rotation = " + this.sprite.rotation)
+		console.log("AIMAngle = " + this.aimAngle)
 	}
 
 	private onClickListener(event: MouseEvent): void {
@@ -38,11 +41,13 @@ class Character extends GameObject {
 		let g = Game.getInstance()
 
 		//TODO: Fix bullet starting and shooting direction
-		let mouseX = event.clientX - g.canvas.getBoundingClientRect().left
-		let mouseY = event.clientY - g.canvas.getBoundingClientRect().top
+		// let mouseX = event.clientX - g.canvas.getBoundingClientRect().left
+		// let mouseY = event.clientY - g.canvas.getBoundingClientRect().top
+		let mouseX = event.clientX
+		let mouseY = event.clientY
 
-		mouseX -= this.posx + this.getRect().width / 2
-		mouseY -= this.posy + this.getRect().height / 2
+		mouseX -= this.sprite.x + this.getRect().width / 2
+		mouseY -= this.sprite.y + this.getRect().height / 2
 
 		this.aimAngle = Math.atan2(mouseY, mouseX) / Math.PI * 180
 	}
@@ -84,14 +89,14 @@ class Character extends GameObject {
 		}
 
 		this.y_speed += 1.5 // gravity
-		this.posx += this.x_speed
-		this.posy += this.y_speed
+		this.sprite.x += this.x_speed
+		this.sprite.y += this.y_speed
 		this.x_speed *= 0.9 // friction
 		this.y_speed *= 0.9 // friction
 
-		if (this.posy > window.innerHeight - 16 - 512) {
+		if (this.sprite.y > window.innerHeight - 16 - 512) {
 			this.isJumping = false
-			this.posy = window.innerHeight - 16 - 512
+			this.sprite.y = window.innerHeight - 16 - 512
 			this.y_speed = 0
 		}
 	}
