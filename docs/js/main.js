@@ -15,7 +15,8 @@ var GameObject = (function () {
         this.x_speed = 0;
         this.y_speed = 0;
         this.imgSource = img;
-        this.rotation = 0;
+        this.sprite.anchor.x = 0.5;
+        this.sprite.anchor.y = 0.5;
     }
     GameObject.prototype.initTexture = function (stage) {
         this.sprite.texture = Game.PIXI.loader.resources[this.imgSource].texture;
@@ -27,6 +28,8 @@ var GameObject = (function () {
     GameObject.prototype.update = function () {
     };
     GameObject.prototype.removeMe = function () {
+        this.sprite.removeAllListeners();
+        this.sprite.destroy();
     };
     return GameObject;
 }());
@@ -39,14 +42,17 @@ var Arrow = (function (_super) {
         _this.sprite.width = 200;
         _this.sprite.height = 200;
         _this.sprite.rotation = aimAngle;
-        _this.x_speed = Math.cos(_this.sprite.rotation / 180 * Math.PI) * 10;
-        _this.y_speed = Math.sin(_this.sprite.rotation / 180 * Math.PI) * 10;
+        _this.x_speed = Math.cos(_this.sprite.rotation) * 10;
+        _this.y_speed = Math.sin(_this.sprite.rotation) * 10;
+        console.log('sprite.rotation: ' + _this.sprite.rotation);
         return _this;
     }
     Arrow.prototype.update = function () {
         _super.prototype.update.call(this);
-        this.x_speed = Math.cos(this.sprite.rotation / 180 * Math.PI) * 10;
-        this.y_speed = Math.sin(this.sprite.rotation / 180 * Math.PI) * 10;
+        if (this.sprite.rotation > -90 && this.sprite.rotation < 90) {
+            this.sprite.rotation += 0.01;
+        }
+        this.y_speed += 0.1;
         this.sprite.x += this.x_speed;
         this.sprite.y += this.y_speed;
     };
@@ -77,8 +83,6 @@ var Character = (function (_super) {
     Character.prototype.shoot = function () {
         var g = Game.getInstance();
         g.addArrow(new Arrow(this.sprite.x, this.sprite.y, this.aimAngle));
-        console.log("PIXI rotation = " + this.sprite.rotation);
-        console.log("AIMAngle = " + this.aimAngle);
     };
     Character.prototype.onClickListener = function (event) {
         this.shoot();
@@ -87,23 +91,20 @@ var Character = (function (_super) {
         var g = Game.getInstance();
         var mouseX = event.clientX;
         var mouseY = event.clientY;
-        mouseX -= this.sprite.x + this.getRect().width / 2;
-        mouseY -= this.sprite.y + this.getRect().height / 2;
-        this.aimAngle = Math.atan2(mouseY, mouseX) / Math.PI * 180;
+        mouseX -= this.sprite.x;
+        mouseY -= this.sprite.y;
+        this.aimAngle = Math.atan2(mouseY, mouseX);
     };
     Character.prototype.keyListener = function (event) {
         var key_state = (event.type == "keydown") ? true : false;
         switch (event.keyCode) {
             case 32:
                 this.up = key_state;
-                console.log(key_state);
                 break;
             case 65:
                 this.left = key_state;
-                console.log("left");
                 break;
             case 68:
-                console.log("right");
                 this.right = key_state;
                 break;
         }
@@ -162,6 +163,7 @@ var Game = (function () {
         this.background.texture = Game.PIXI.loader.resources["./images/bg.png"].texture;
         Game.PIXI.stage.addChild(this.background);
         this.character.initTexture(Game.PIXI.stage);
+        Game.PIXI.renderer;
         Game.PIXI.ticker.add(function () { return _this.gameLoop(); });
     };
     Game.prototype.gameLoop = function () {

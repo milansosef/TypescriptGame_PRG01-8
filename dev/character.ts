@@ -29,8 +29,10 @@ class Character extends GameObject {
 		//Shoot an arrow
 		let g = Game.getInstance()
 		g.addArrow(new Arrow(this.sprite.x, this.sprite.y, this.aimAngle))
-		console.log("PIXI rotation = " + this.sprite.rotation)
-		console.log("AIMAngle = " + this.aimAngle)
+		// g.addArrow(new Arrow(this.sprite.x+Math.cos(this.sprite.rotation)*20, this.sprite.y+Math.sin(this.sprite.rotation)*20, this.aimAngle))
+
+		// console.log("PIXI rotation = " + this.sprite.rotation)
+		// console.log("AIMAngle = " + this.aimAngle)
 	}
 
 	private onClickListener(event: MouseEvent): void {
@@ -40,16 +42,14 @@ class Character extends GameObject {
 	private onMouseMove(event: MouseEvent): void {
 		let g = Game.getInstance()
 
-		//TODO: Fix bullet starting and shooting direction
-		// let mouseX = event.clientX - g.canvas.getBoundingClientRect().left
-		// let mouseY = event.clientY - g.canvas.getBoundingClientRect().top
+		//Arrow shooting direction
 		let mouseX = event.clientX
 		let mouseY = event.clientY
 
-		mouseX -= this.sprite.x + this.getRect().width / 2
-		mouseY -= this.sprite.y + this.getRect().height / 2
+		mouseX -= this.sprite.x
+		mouseY -= this.sprite.y
 
-		this.aimAngle = Math.atan2(mouseY, mouseX) / Math.PI * 180
+		this.aimAngle = Math.atan2(mouseY, mouseX)
 	}
 
 	private keyListener(event: KeyboardEvent): void {
@@ -59,16 +59,14 @@ class Character extends GameObject {
 			//SPACEBAR; Jump 
 			case 32:
 				this.up = key_state
-				console.log(key_state)
+				// console.log(key_state)
 				break
 			//A; Walk left
 			case 65:
 				this.left = key_state
-				console.log("left")
 				break
 			//D; Walk right
 			case 68:
-				console.log("right")
 				this.right = key_state
 				break
 		}

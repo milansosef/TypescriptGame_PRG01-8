@@ -5,15 +5,18 @@ class Arrow extends GameObject {
 		super('./images/Arrow.png')
 		this.sprite.x = character_x
 		this.sprite.y = character_y
+		// this.sprite.position.x = character_x
+		// this.sprite.position.y = character_y
 
 		this.sprite.width = 200
 		this.sprite.height = 200
 
 		this.sprite.rotation = aimAngle
-		this.x_speed = Math.cos(this.sprite.rotation / 180 * Math.PI) * 10
-		this.y_speed = Math.sin(this.sprite.rotation / 180 * Math.PI) * 10
 
-		// console.log('sprite.rotation: ' + this.sprite.rotation)
+		this.x_speed = Math.cos(this.sprite.rotation) * 10
+		this.y_speed = Math.sin(this.sprite.rotation) * 10
+
+		console.log('sprite.rotation: ' + this.sprite.rotation)
 	}
 
 	update() {
@@ -23,19 +26,25 @@ class Arrow extends GameObject {
 		// console.log("sprite.rotation = " + this.sprite.rotation)
 
 		// Fall to right
-		// if (this.sprite.rotation > -90 && this.sprite.rotation < 90) {
-		// 	this.sprite.rotation++
+		if (this.sprite.rotation > -90 && this.sprite.rotation < 90) {
+			this.sprite.rotation += 0.01
+		}
+
+		// if(this.sprite.rotation > 0) {
+		// 	this.sprite.rotation += 0.01
+		// } else {
+		// 	this.sprite.rotation -= 0.01
 		// }
+
 		// else if ((this.sprite.rotation < -90 && this.sprite.rotation >= -181) || (this.sprite.rotation <= 180 && this.sprite.rotation > 90)) {
 		// 	if (this.sprite.rotation < -180) {
 		// 		this.sprite.rotation = 180
 		// 	}
-		// 	this.sprite.rotation--
+		// 	this.sprite.rotation += 0.01
 		// }
 
-		this.x_speed = Math.cos(this.sprite.rotation / 180 * Math.PI) * 10
-		this.y_speed = Math.sin(this.sprite.rotation / 180 * Math.PI) * 10
-		this.sprite.x += this.x_speed;
-		this.sprite.y += this.y_speed;
+		this.y_speed += 0.1
+		this.sprite.x += this.x_speed
+		this.sprite.y += this.y_speed
 	}
 }

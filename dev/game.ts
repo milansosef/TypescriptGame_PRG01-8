@@ -44,9 +44,9 @@ class Game {
 		Game.PIXI.stage.addChild(this.background)
 
 		this.character.initTexture(Game.PIXI.stage)
-
+		Game.PIXI.renderer
 		//Gameloop
-		Game.PIXI.ticker.add(() => this.gameLoop());
+		Game.PIXI.ticker.add(() => this.gameLoop())
 	}
 
 	private gameLoop(): void {
