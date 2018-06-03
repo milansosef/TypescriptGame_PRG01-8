@@ -22,28 +22,26 @@ class Arrow extends GameObject {
 	update() {
 		super.update()
 
-		// See if arrow is shot left or right
-		// console.log("sprite.rotation = " + this.sprite.rotation)
+		//TODO: Fix arrow not rotating at PI radius
+		//Shooting angles on the rightside
+		let leftUp = this.sprite.rotation <= Math.PI / -2 && this.sprite.rotation >= Math.PI * -1
+		let leftDown = this.sprite.rotation <= Math.PI && this.sprite.rotation >= Math.PI / 2
 
-		// Fall to right
-		if (this.sprite.rotation > -90 && this.sprite.rotation < 90) {
+		//Shooting angles on the leftside
+		let rightUp = this.sprite.rotation < 0 && this.sprite.rotation > Math.PI / -2
+		let rightDown = this.sprite.rotation < Math.PI / 2 && this.sprite.rotation > 0
+
+		// Rotate arrow left
+		if (leftUp || leftDown) {
+			this.sprite.rotation -= 0.01
+		}
+		// Rotate arrow right
+		if (rightUp || rightDown) {
 			this.sprite.rotation += 0.01
 		}
 
-		// if(this.sprite.rotation > 0) {
-		// 	this.sprite.rotation += 0.01
-		// } else {
-		// 	this.sprite.rotation -= 0.01
-		// }
 
-		// else if ((this.sprite.rotation < -90 && this.sprite.rotation >= -181) || (this.sprite.rotation <= 180 && this.sprite.rotation > 90)) {
-		// 	if (this.sprite.rotation < -180) {
-		// 		this.sprite.rotation = 180
-		// 	}
-		// 	this.sprite.rotation += 0.01
-		// }
-
-		this.y_speed += 0.1
+		this.y_speed += 0.1 //Gravity
 		this.sprite.x += this.x_speed
 		this.sprite.y += this.y_speed
 	}

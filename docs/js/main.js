@@ -49,7 +49,14 @@ var Arrow = (function (_super) {
     }
     Arrow.prototype.update = function () {
         _super.prototype.update.call(this);
-        if (this.sprite.rotation > -90 && this.sprite.rotation < 90) {
+        var leftUp = this.sprite.rotation <= Math.PI / -2 && this.sprite.rotation >= Math.PI * -1;
+        var leftDown = this.sprite.rotation <= Math.PI && this.sprite.rotation >= Math.PI / 2;
+        var rightUp = this.sprite.rotation < 0 && this.sprite.rotation > Math.PI / -2;
+        var rightDown = this.sprite.rotation < Math.PI / 2 && this.sprite.rotation > 0;
+        if (leftUp || leftDown) {
+            this.sprite.rotation -= 0.01;
+        }
+        if (rightUp || rightDown) {
             this.sprite.rotation += 0.01;
         }
         this.y_speed += 0.1;
