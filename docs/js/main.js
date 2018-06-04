@@ -15,21 +15,17 @@ var GameObject = (function () {
         this.x_speed = 0;
         this.y_speed = 0;
         this.imgSource = img;
+        this.sprite.texture = Game.getInstance().getPIXI().loader.resources[this.imgSource].texture;
+        Game.getInstance().getPIXI().stage.addChild(this.sprite);
         this.sprite.anchor.x = 0.5;
         this.sprite.anchor.y = 0.5;
     }
-    GameObject.prototype.initTexture = function (stage) {
-        this.sprite.texture = Game.PIXI.loader.resources[this.imgSource].texture;
-        stage.addChild(this.sprite);
-    };
     GameObject.prototype.getRect = function () {
         return this.sprite.getBounds();
     };
     GameObject.prototype.update = function () {
     };
     GameObject.prototype.removeMe = function () {
-        this.sprite.removeAllListeners();
-        this.sprite.destroy();
     };
     return GameObject;
 }());
@@ -49,19 +45,23 @@ var Arrow = (function (_super) {
     }
     Arrow.prototype.update = function () {
         _super.prototype.update.call(this);
-        var leftUp = this.sprite.rotation <= Math.PI / -2 && this.sprite.rotation >= Math.PI * -1;
-        var leftDown = this.sprite.rotation <= Math.PI && this.sprite.rotation >= Math.PI / 2;
+        this.checkOutofScreen();
         var rightUp = this.sprite.rotation < 0 && this.sprite.rotation > Math.PI / -2;
         var rightDown = this.sprite.rotation < Math.PI / 2 && this.sprite.rotation > 0;
-        if (leftUp || leftDown) {
-            this.sprite.rotation -= 0.01;
-        }
         if (rightUp || rightDown) {
             this.sprite.rotation += 0.01;
+        }
+        else {
+            this.sprite.rotation -= 0.01;
         }
         this.y_speed += 0.1;
         this.sprite.x += this.x_speed;
         this.sprite.y += this.y_speed;
+    };
+    Arrow.prototype.checkOutofScreen = function () {
+        if (this.sprite.position.x < 0 - this.sprite.width || this.sprite.position.x > Game.getInstance().canvasWidth) {
+            this.removeMe();
+        }
     };
     return Arrow;
 }(GameObject));
@@ -77,6 +77,8 @@ var Character = (function (_super) {
         _this.isJumping = false;
         _this.sprite.width = 200;
         _this.sprite.height = 200;
+        _this.sprite.position.x = Game.getInstance().getPIXI().stage.width / 2 - _this.sprite.width / 2;
+        _this.sprite.position.y = Game.getInstance().getPIXI().stage.height / 2 - _this.sprite.height / 2;
         window.addEventListener("mousemove", function (e) { return _this.onMouseMove(e); });
         window.addEventListener("click", function (e) { return _this.onClickListener(e); });
         window.addEventListener("keydown", function (e) { return _this.keyListener(e); });
@@ -132,9 +134,9 @@ var Character = (function (_super) {
         this.sprite.y += this.y_speed;
         this.x_speed *= 0.9;
         this.y_speed *= 0.9;
-        if (this.sprite.y > window.innerHeight - 16 - 512) {
+        if (this.sprite.y > window.innerHeight - 150) {
             this.isJumping = false;
-            this.sprite.y = window.innerHeight - 16 - 512;
+            this.sprite.y = window.innerHeight - 150;
             this.y_speed = 0;
         }
     };
@@ -146,13 +148,14 @@ var Character = (function (_super) {
 var Game = (function () {
     function Game() {
         var _this = this;
+        this.canvasWidth = 1280;
+        this.canvasHeigth = 768;
         this.background = new PIXI.Sprite();
-        Game.PIXI = new PIXI.Application({ width: Game.canvasWidth, height: Game.canvasHeigth });
-        document.body.appendChild(Game.PIXI.view);
-        this.character = new Character();
-        this.arrows = new Array();
-        Game.PIXI.loader
+        this.PIXI = new PIXI.Application({ width: this.canvasWidth, height: this.canvasHeigth });
+        document.body.appendChild(this.PIXI.view);
+        this.PIXI.loader
             .add([
+            "./images/tilesheet.json",
             "./images/bg.png",
             "./images/archer.png",
             "./images/Arrow.png"
@@ -165,13 +168,20 @@ var Game = (function () {
         }
         return Game.instance;
     };
+    Game.prototype.getPIXI = function () {
+        return this.PIXI;
+    };
     Game.prototype.setup = function () {
         var _this = this;
-        this.background.texture = Game.PIXI.loader.resources["./images/bg.png"].texture;
-        Game.PIXI.stage.addChild(this.background);
-        this.character.initTexture(Game.PIXI.stage);
-        Game.PIXI.renderer;
-        Game.PIXI.ticker.add(function () { return _this.gameLoop(); });
+        this.background.texture = this.PIXI.loader.resources["./images/bg.png"].texture;
+        this.background.width = this.canvasWidth;
+        this.background.height = this.canvasHeigth;
+        this.PIXI.stage.addChild(this.background);
+        this.level = new Level();
+        this.character = new Character();
+        this.arrows = new Array();
+        this.level.initTexture(this.PIXI.stage);
+        this.PIXI.ticker.add(function () { return _this.gameLoop(); });
     };
     Game.prototype.gameLoop = function () {
         this.character.update();
@@ -179,19 +189,50 @@ var Game = (function () {
             var a = _a[_i];
             a.update();
         }
-        Game.PIXI.renderer.render(Game.PIXI.stage);
+        this.PIXI.renderer.render(this.PIXI.stage);
     };
     Game.prototype.addArrow = function (a) {
         this.arrows.push(a);
-        a.initTexture(Game.PIXI.stage);
     };
-    Game.canvasWidth = 1280;
-    Game.canvasHeigth = 768;
     return Game;
 }());
 window.addEventListener("load", function () {
     Game.getInstance();
 });
+var Level = (function () {
+    function Level() {
+        this.sprites = new Array();
+    }
+    Level.prototype.initTexture = function (stage) {
+        var id = Game.getInstance().getPIXI().loader.resources["./images/tilesheet.json"].textures;
+        this.createGroundRow(stage, id, 10);
+    };
+    Level.prototype.createGroundRow = function (stage, id, num) {
+        for (var i = 0; i < num; i++) {
+            var sprite = new PIXI.Sprite(id["2.png"]);
+            sprite.position.x = i * sprite.width;
+            sprite.position.y = Game.getInstance().canvasHeigth - sprite.height;
+            this.sprites.push(sprite);
+            stage.addChild(sprite);
+        }
+    };
+    return Level;
+}());
+var MapSpritesPool = (function () {
+    function MapSpritesPool() {
+        this.sprites = [];
+        var id = Game.getInstance().getPIXI().loader.resources["./images/tilesheet.json"].textures;
+        this.addMapSprites(6, id);
+    }
+    MapSpritesPool.prototype.addMapSprites = function (amount, id) {
+        for (var i = 0; i < amount; i++) {
+            var sprite = new PIXI.Sprite(id["1.png"]);
+            this.sprites.push(sprite);
+        }
+    };
+    ;
+    return MapSpritesPool;
+}());
 var Util = (function () {
     function Util() {
     }

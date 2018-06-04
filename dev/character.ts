@@ -13,7 +13,11 @@ class Character extends GameObject {
 
 		this.sprite.width = 200
 		this.sprite.height = 200
+		
+		this.sprite.position.x = Game.getInstance().getPIXI().stage.width / 2 - this.sprite.width / 2
+		this.sprite.position.y = Game.getInstance().getPIXI().stage.height / 2 - this.sprite.height / 2
 
+		// Game.PIXI.stage.addEventListener("click", (e: MouseEvent) => this.onClickListener(e))
 		window.addEventListener("mousemove", (e: MouseEvent) => this.onMouseMove(e))
 		window.addEventListener("click", (e: MouseEvent) => this.onClickListener(e))
 		window.addEventListener("keydown", (e: KeyboardEvent) => this.keyListener(e))
@@ -29,10 +33,6 @@ class Character extends GameObject {
 		//Shoot an arrow
 		let g = Game.getInstance()
 		g.addArrow(new Arrow(this.sprite.x, this.sprite.y, this.aimAngle))
-		// g.addArrow(new Arrow(this.sprite.x+Math.cos(this.sprite.rotation)*20, this.sprite.y+Math.sin(this.sprite.rotation)*20, this.aimAngle))
-
-		// console.log("PIXI rotation = " + this.sprite.rotation)
-		// console.log("AIMAngle = " + this.aimAngle)
 	}
 
 	private onClickListener(event: MouseEvent): void {
@@ -92,9 +92,9 @@ class Character extends GameObject {
 		this.x_speed *= 0.9 // friction
 		this.y_speed *= 0.9 // friction
 
-		if (this.sprite.y > window.innerHeight - 16 - 512) {
+		if (this.sprite.y > window.innerHeight - 150) {
 			this.isJumping = false
-			this.sprite.y = window.innerHeight - 16 - 512
+			this.sprite.y = window.innerHeight - 150
 			this.y_speed = 0
 		}
 	}

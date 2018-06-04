@@ -1,11 +1,12 @@
 class Game {
-	public static canvasWidth = 1280
-	public static canvasHeigth = 768
+	public canvasWidth = 1280
+	public canvasHeigth = 768
 
 	private static instance: Game
-	public static PIXI: any
+	private PIXI: PIXI.Application
 
 	private background = new PIXI.Sprite()
+	private level: Level
 	private character: Character
 	private arrows: Array<Arrow>
 
@@ -17,21 +18,18 @@ class Game {
 		return Game.instance
 	}
 
+	//Get PIXI
+	public getPIXI(): PIXI.Application {
+		return this.PIXI
+	}
+
 	private constructor() {
-		Game.PIXI = new PIXI.Application({ width: Game.canvasWidth, height: Game.canvasHeigth })
-		document.body.appendChild(Game.PIXI.view)
+		this.PIXI = new PIXI.Application({ width: this.canvasWidth, height: this.canvasHeigth })
+		document.body.appendChild(this.PIXI.view)
 
-		//For full screen
-		// Game.PIXI.renderer.view.style.position = "absolute";
-		// Game.PIXI.renderer.view.style.display = "block";
-		// Game.PIXI.renderer.autoResize = true;
-		// Game.PIXI.renderer.resize(window.innerWidth, window.innerHeight);
-
-		this.character = new Character()
-		this.arrows = new Array<Arrow>()
-
-		Game.PIXI.loader
+		this.PIXI.loader
 			.add([
+				"./images/tilesheet.json",
 				"./images/bg.png",
 				"./images/archer.png",
 				"./images/Arrow.png"
@@ -40,13 +38,17 @@ class Game {
 	}
 
 	private setup(): void {
-		this.background.texture = Game.PIXI.loader.resources["./images/bg.png"].texture
-		Game.PIXI.stage.addChild(this.background)
+		this.background.texture = this.PIXI.loader.resources["./images/bg.png"].texture
+		this.background.width = this.canvasWidth
+		this.background.height = this.canvasHeigth
+		this.PIXI.stage.addChild(this.background)
 
-		this.character.initTexture(Game.PIXI.stage)
-		Game.PIXI.renderer
+		this.level = new Level(this.PIXI.stage)
+		this.character = new Character()
+		this.arrows = new Array<Arrow>()
+
 		//Gameloop
-		Game.PIXI.ticker.add(() => this.gameLoop())
+		this.PIXI.ticker.add(() => this.gameLoop())
 	}
 
 	private gameLoop(): void {
@@ -56,14 +58,13 @@ class Game {
 			a.update()
 		}
 
-		Game.PIXI.renderer.render(Game.PIXI.stage)
+		this.PIXI.renderer.render(this.PIXI.stage)
 	}
 
 	public addArrow(a: Arrow): void {
 		this.arrows.push(a)
-		a.initTexture(Game.PIXI.stage)
+		// a.initTexture(this.PIXI.stage)
 	}
-
 }
 
 window.addEventListener("load", () => {
