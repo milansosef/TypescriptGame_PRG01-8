@@ -1,15 +1,16 @@
 class Game {
-	public canvasWidth = 1280
-	public canvasHeigth = 768
-
 	private static game_instance: Game
-	private app: PIXI.Application
+	private PIXI: PIXI.Application
+	private bump: any = new Bump(PIXI)
 
-	private tiledMap: PIXI.Container
-	private background = new PIXI.Sprite()
-	private level: Level
+	// private level: Level
+	private tiledMap: any
+	private platforms: Array<PIXI.extras.AnimatedSprite> = []
 	private character: Character
 	private arrows: Array<Arrow>
+
+	public canvasWidth = 1280
+	public canvasHeigth = 768
 
 	// Singleton
 	public static instance() {
@@ -20,19 +21,21 @@ class Game {
 	}
 
 	//Get app
-	public PIXI(): PIXI.Application {
-		return this.app
+	public getPIXI(): PIXI.Application {
+		return this.PIXI
 	}
 
 	private constructor() {
-		this.app = new PIXI.Application({ width: this.canvasWidth, height: this.canvasHeigth })
-		this.app.stage.interactive = true
-		document.body.appendChild(this.app.view)
+		//Initialize PIXI
+		this.PIXI = new PIXI.Application({ width: this.canvasWidth, height: this.canvasHeigth })
+		this.PIXI.stage.interactive = true
+		document.body.appendChild(this.PIXI.view)
 
 		//Add tiledMap to the stage
 		this.tiledMap = new PIXI.Container()
-		this.app.stage.addChild(this.tiledMap)
+		this.PIXI.stage.addChild(this.tiledMap)
 
+		//Load assets
 		PIXI.loader
 			.add([
 				"./assets/map_x64.tmx",
@@ -50,20 +53,62 @@ class Game {
 		this.arrows = new Array<Arrow>()
 		this.tiledMap.addChild(new PIXI.extras.TiledMap("./assets/map_x64.tmx"))
 
-		//Gameloop
-		this.app.ticker.add(() => this.gameLoop())
+		//Fill platform array with tiles.
+		for (let t of this.tiledMap.children[0].children[2].children) {
+			this.platforms.push(t)
+		}
+
+		//TODO: Trying to fix texture bleeding
+		for (let p of this.platforms) {
+			p.texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST
+		}
+
+		console.log(this.platforms)
+
+		//Gameloop (PIXI version)
+		this.PIXI.ticker.add(() => this.gameLoop())
 	}
 
 	private gameLoop(): void {
+
+		//TODO: Finish collision functionality
+		for (let p of this.platforms) {
+			let collision = this.bump.hit(p, this.character.getSprite(), false, true, false)
+			// console.log(collision)
+			// let characterVsPlatforms = this.bump.hit(
+			// 	this.character.getSprite(),
+			// 	p,
+			// 	true, false, false,
+			// 	function (collision: any, platform: any) {
+			// 		console.log("Hit " + collision + "platform = " + platform)
+			// 		//`collision` tells you the side on player that the collision occurred on.
+			// 		//`platform` is the sprite from the `world.platforms` array
+			// 		//that the player is colliding with
+			// 	}
+			// )
+			// console.log(characterVsPlatforms)
+		}
+
+		//Test collision
+		// if (collision) {
+		// 	console.log("Yay hit!" + collision)
+		// } else {
+		// 	console.log("No hit" + collision)
+		// }
+
+		//Update character
 		this.character.update()
 
+		//Update arrows
 		for (let a of this.arrows) {
 			a.update()
 		}
 
-		this.app.renderer.render(this.app.stage)
+		//Render the stage
+		this.PIXI.renderer.render(this.PIXI.stage)
 	}
 
+	//Add an arrow
 	public addArrow(a: Arrow): void {
 		this.arrows.push(a)
 		// a.initTexture(this.app.stage)

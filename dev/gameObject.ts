@@ -1,13 +1,15 @@
 class GameObject {
 	protected sprite = new PIXI.Sprite()
 	private imgSource: string
+
+	protected speed: number = 0
 	protected x_speed: number = 0
 	protected y_speed: number = 0
 
 	constructor(img: string) {
 		this.imgSource = img
 		this.sprite.texture = PIXI.loader.resources[this.imgSource].texture
-		Game.instance().PIXI().stage.addChild(this.sprite)
+		Game.instance().getPIXI().stage.addChild(this.sprite)
 
 		// center the sprite's anchor point
 		this.sprite.anchor.x = 0.5
@@ -18,9 +20,11 @@ class GameObject {
 		return this.sprite.getBounds()
 	}
 
-	public update(): void {
-		// this.sprite.updateTransform()
+	public getSprite(): PIXI.Sprite {
+		return this.sprite
 	}
+
+	public update(): void {}
 
 	public removeMe(): void {
 		//TODO: Remove sprite
