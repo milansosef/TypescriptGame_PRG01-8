@@ -6,7 +6,7 @@ class Level {
 	constructor(stage: PIXI.Container) {
 		// this.mapSpritesPool = new MapSpritesPool()
 		this.sprites = new Array()
-		let id = Game.getInstance().getPIXI().loader.resources["./images/tilesheet.json"].textures
+		let id = PIXI.loader.resources["./assets/tilesheet.json"].textures
 
 		this.createGroundRow(stage, id, 10)
 	}
@@ -15,7 +15,7 @@ class Level {
 		for (let i = 0; i < num; i++) {
 			let sprite = new PIXI.Sprite(id["2.png"])
 			sprite.position.x = i * sprite.width
-			sprite.position.y = Game.getInstance().canvasHeigth - sprite.height
+			sprite.position.y = Game.instance().canvasHeigth - sprite.height
 			this.sprites.push(sprite)
 			stage.addChild(sprite)
 		}

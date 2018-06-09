@@ -2,53 +2,56 @@ class Game {
 	public canvasWidth = 1280
 	public canvasHeigth = 768
 
-	private static instance: Game
-	private PIXI: PIXI.Application
+	private static game_instance: Game
+	private app: PIXI.Application
 
+	private tiledMap: PIXI.Container
 	private background = new PIXI.Sprite()
 	private level: Level
 	private character: Character
 	private arrows: Array<Arrow>
 
 	// Singleton
-	public static getInstance() {
-		if (!Game.instance) {
-			Game.instance = new Game()
+	public static instance() {
+		if (!Game.game_instance) {
+			Game.game_instance = new Game()
 		}
-		return Game.instance
+		return Game.game_instance
 	}
 
-	//Get PIXI
-	public getPIXI(): PIXI.Application {
-		return this.PIXI
+	//Get app
+	public PIXI(): PIXI.Application {
+		return this.app
 	}
 
 	private constructor() {
-		this.PIXI = new PIXI.Application({ width: this.canvasWidth, height: this.canvasHeigth })
-		document.body.appendChild(this.PIXI.view)
+		this.app = new PIXI.Application({ width: this.canvasWidth, height: this.canvasHeigth })
+		this.app.stage.interactive = true
+		document.body.appendChild(this.app.view)
 
-		this.PIXI.loader
+		//Add tiledMap to the stage
+		this.tiledMap = new PIXI.Container()
+		this.app.stage.addChild(this.tiledMap)
+
+		PIXI.loader
 			.add([
-				"./images/tilesheet.json",
-				"./images/bg.png",
-				"./images/archer.png",
-				"./images/Arrow.png"
+				"./assets/map_x64.tmx",
+				"./assets/tilesheet.json",
+				"./assets/images/bg.png",
+				"./assets/images/archer.png",
+				"./assets/images/Arrow.png"
 			])
 			.load(() => this.setup())
 	}
 
 	private setup(): void {
-		this.background.texture = this.PIXI.loader.resources["./images/bg.png"].texture
-		this.background.width = this.canvasWidth
-		this.background.height = this.canvasHeigth
-		this.PIXI.stage.addChild(this.background)
-
-		this.level = new Level(this.PIXI.stage)
+		// this.level = new Level(this.app.stage)
 		this.character = new Character()
 		this.arrows = new Array<Arrow>()
+		this.tiledMap.addChild(new PIXI.extras.TiledMap("./assets/map_x64.tmx"))
 
 		//Gameloop
-		this.PIXI.ticker.add(() => this.gameLoop())
+		this.app.ticker.add(() => this.gameLoop())
 	}
 
 	private gameLoop(): void {
@@ -58,15 +61,15 @@ class Game {
 			a.update()
 		}
 
-		this.PIXI.renderer.render(this.PIXI.stage)
+		this.app.renderer.render(this.app.stage)
 	}
 
 	public addArrow(a: Arrow): void {
 		this.arrows.push(a)
-		// a.initTexture(this.PIXI.stage)
+		// a.initTexture(this.app.stage)
 	}
 }
 
 window.addEventListener("load", () => {
-	Game.getInstance()
+	Game.instance()
 })

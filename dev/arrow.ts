@@ -5,7 +5,7 @@
 //if f pressed -> put all arrows on fire.
 class Arrow extends GameObject {
 	constructor(character_x: number, character_y: number, aimAngle: number) {
-		super('./images/Arrow.png')
+		super('./assets/images/Arrow.png')
 		this.sprite.x = character_x
 		this.sprite.y = character_y
 
@@ -44,7 +44,7 @@ class Arrow extends GameObject {
 	}
 
 	private checkOutofScreen(): void {
-		if (this.sprite.position.x < 0 - this.sprite.width || this.sprite.position.x > Game.getInstance().canvasWidth) {
+		if (this.sprite.position.x < 0 - this.sprite.width || this.sprite.position.x > Game.instance().canvasWidth) {
 			this.removeMe()
 		}
 	}

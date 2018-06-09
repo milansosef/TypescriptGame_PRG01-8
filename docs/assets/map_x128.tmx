@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" tiledversion="1.1.5" orientation="orthogonal" renderorder="right-down" width="10" height="6" tilewidth="128" tileheight="128" infinite="0" nextobjectid="1">
+<tileset firstgid="1" name="spritesheet" tilewidth="128" tileheight="128" tilecount="20" columns="5">
+ <image source="spritesheet_x128.png" trans="ff00ff" width="640" height="512"/>
+</tileset>
+ <tileset firstgid="21" name="bg" tilewidth="1280" tileheight="768" tilecount="1" columns="1">
+  <image source="bg.png" width="1280" height="768"/>
+ </tileset>
+ <layer name="bg" width="10" height="6">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,6,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+21,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer name="Tilelaag 1" width="10" height="6">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,6,8,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,6,8,0,0,6,8,0,0,
+0,0,0,0,0,0,0,0,0,0,
+1,13,13,14,11,11,1,13,13,14
+</data>
+ </layer>
+</map>

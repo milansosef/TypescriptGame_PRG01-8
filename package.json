@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/milansosef/TypescriptGame_PRG01-8#readme",
   "dependencies": {
+    "pixi-tiledmap": "^1.9.3",
     "pixi.js": "^4.8.0"
   },
   "devDependencies": {

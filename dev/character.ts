@@ -9,13 +9,13 @@ class Character extends GameObject {
 	private isJumping: boolean = false
 
 	constructor() {
-		super('./images/archer.png')
+		super('./assets/images/archer.png')
 
 		this.sprite.width = 200
 		this.sprite.height = 200
 		
-		this.sprite.position.x = Game.getInstance().getPIXI().stage.width / 2 - this.sprite.width / 2
-		this.sprite.position.y = Game.getInstance().getPIXI().stage.height / 2 - this.sprite.height / 2
+		this.sprite.position.x = Game.instance().PIXI().stage.width / 2 - this.sprite.width / 2
+		this.sprite.position.y = Game.instance().PIXI().stage.height / 2 - this.sprite.height / 2
 
 		// Game.PIXI.stage.addEventListener("click", (e: MouseEvent) => this.onClickListener(e))
 		window.addEventListener("mousemove", (e: MouseEvent) => this.onMouseMove(e))
@@ -31,8 +31,7 @@ class Character extends GameObject {
 
 	private shoot(): void {
 		//Shoot an arrow
-		let g = Game.getInstance()
-		g.addArrow(new Arrow(this.sprite.x, this.sprite.y, this.aimAngle))
+		Game.instance().addArrow(new Arrow(this.sprite.x, this.sprite.y, this.aimAngle))
 	}
 
 	private onClickListener(event: MouseEvent): void {
@@ -40,8 +39,6 @@ class Character extends GameObject {
 	}
 
 	private onMouseMove(event: MouseEvent): void {
-		let g = Game.getInstance()
-
 		//Arrow shooting direction
 		let mouseX = event.clientX
 		let mouseY = event.clientY

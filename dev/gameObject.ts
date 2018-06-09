@@ -6,8 +6,8 @@ class GameObject {
 
 	constructor(img: string) {
 		this.imgSource = img
-		this.sprite.texture = Game.getInstance().getPIXI().loader.resources[this.imgSource].texture
-		Game.getInstance().getPIXI().stage.addChild(this.sprite)
+		this.sprite.texture = PIXI.loader.resources[this.imgSource].texture
+		Game.instance().PIXI().stage.addChild(this.sprite)
 
 		// center the sprite's anchor point
 		this.sprite.anchor.x = 0.5

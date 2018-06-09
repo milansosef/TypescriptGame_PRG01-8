@@ -15,8 +15,8 @@ var GameObject = (function () {
         this.x_speed = 0;
         this.y_speed = 0;
         this.imgSource = img;
-        this.sprite.texture = Game.getInstance().getPIXI().loader.resources[this.imgSource].texture;
-        Game.getInstance().getPIXI().stage.addChild(this.sprite);
+        this.sprite.texture = PIXI.loader.resources[this.imgSource].texture;
+        Game.instance().PIXI().stage.addChild(this.sprite);
         this.sprite.anchor.x = 0.5;
         this.sprite.anchor.y = 0.5;
     }
@@ -32,7 +32,7 @@ var GameObject = (function () {
 var Arrow = (function (_super) {
     __extends(Arrow, _super);
     function Arrow(character_x, character_y, aimAngle) {
-        var _this = _super.call(this, './images/Arrow.png') || this;
+        var _this = _super.call(this, './assets/images/Arrow.png') || this;
         _this.sprite.x = character_x;
         _this.sprite.y = character_y;
         _this.sprite.width = 200;
@@ -59,7 +59,7 @@ var Arrow = (function (_super) {
         this.sprite.y += this.y_speed;
     };
     Arrow.prototype.checkOutofScreen = function () {
-        if (this.sprite.position.x < 0 - this.sprite.width || this.sprite.position.x > Game.getInstance().canvasWidth) {
+        if (this.sprite.position.x < 0 - this.sprite.width || this.sprite.position.x > Game.instance().canvasWidth) {
             this.removeMe();
         }
     };
@@ -68,7 +68,7 @@ var Arrow = (function (_super) {
 var Character = (function (_super) {
     __extends(Character, _super);
     function Character() {
-        var _this = _super.call(this, './images/archer.png') || this;
+        var _this = _super.call(this, './assets/images/archer.png') || this;
         _this.left = false;
         _this.right = false;
         _this.up = false;
@@ -77,8 +77,8 @@ var Character = (function (_super) {
         _this.isJumping = false;
         _this.sprite.width = 200;
         _this.sprite.height = 200;
-        _this.sprite.position.x = Game.getInstance().getPIXI().stage.width / 2 - _this.sprite.width / 2;
-        _this.sprite.position.y = Game.getInstance().getPIXI().stage.height / 2 - _this.sprite.height / 2;
+        _this.sprite.position.x = Game.instance().PIXI().stage.width / 2 - _this.sprite.width / 2;
+        _this.sprite.position.y = Game.instance().PIXI().stage.height / 2 - _this.sprite.height / 2;
         window.addEventListener("mousemove", function (e) { return _this.onMouseMove(e); });
         window.addEventListener("click", function (e) { return _this.onClickListener(e); });
         window.addEventListener("keydown", function (e) { return _this.keyListener(e); });
@@ -90,14 +90,12 @@ var Character = (function (_super) {
         this.movementController();
     };
     Character.prototype.shoot = function () {
-        var g = Game.getInstance();
-        g.addArrow(new Arrow(this.sprite.x, this.sprite.y, this.aimAngle));
+        Game.instance().addArrow(new Arrow(this.sprite.x, this.sprite.y, this.aimAngle));
     };
     Character.prototype.onClickListener = function (event) {
         this.shoot();
     };
     Character.prototype.onMouseMove = function (event) {
-        var g = Game.getInstance();
         var mouseX = event.clientX;
         var mouseY = event.clientY;
         mouseX -= this.sprite.x;
@@ -151,37 +149,36 @@ var Game = (function () {
         this.canvasWidth = 1280;
         this.canvasHeigth = 768;
         this.background = new PIXI.Sprite();
-        this.PIXI = new PIXI.Application({ width: this.canvasWidth, height: this.canvasHeigth });
-        document.body.appendChild(this.PIXI.view);
-        this.PIXI.loader
+        this.app = new PIXI.Application({ width: this.canvasWidth, height: this.canvasHeigth });
+        this.app.stage.interactive = true;
+        document.body.appendChild(this.app.view);
+        this.tiledMap = new PIXI.Container();
+        this.app.stage.addChild(this.tiledMap);
+        PIXI.loader
             .add([
-            "./images/tilesheet.json",
-            "./images/bg.png",
-            "./images/archer.png",
-            "./images/Arrow.png"
+            "./assets/map_x64.tmx",
+            "./assets/tilesheet.json",
+            "./assets/images/bg.png",
+            "./assets/images/archer.png",
+            "./assets/images/Arrow.png"
         ])
             .load(function () { return _this.setup(); });
     }
-    Game.getInstance = function () {
-        if (!Game.instance) {
-            Game.instance = new Game();
+    Game.instance = function () {
+        if (!Game.game_instance) {
+            Game.game_instance = new Game();
         }
-        return Game.instance;
+        return Game.game_instance;
     };
-    Game.prototype.getPIXI = function () {
-        return this.PIXI;
+    Game.prototype.PIXI = function () {
+        return this.app;
     };
     Game.prototype.setup = function () {
         var _this = this;
-        this.background.texture = this.PIXI.loader.resources["./images/bg.png"].texture;
-        this.background.width = this.canvasWidth;
-        this.background.height = this.canvasHeigth;
-        this.PIXI.stage.addChild(this.background);
-        this.level = new Level();
         this.character = new Character();
         this.arrows = new Array();
-        this.level.initTexture(this.PIXI.stage);
-        this.PIXI.ticker.add(function () { return _this.gameLoop(); });
+        this.tiledMap.addChild(new PIXI.extras.TiledMap("./assets/map_x64.tmx"));
+        this.app.ticker.add(function () { return _this.gameLoop(); });
     };
     Game.prototype.gameLoop = function () {
         this.character.update();
@@ -189,7 +186,7 @@ var Game = (function () {
             var a = _a[_i];
             a.update();
         }
-        this.PIXI.renderer.render(this.PIXI.stage);
+        this.app.renderer.render(this.app.stage);
     };
     Game.prototype.addArrow = function (a) {
         this.arrows.push(a);
@@ -197,21 +194,19 @@ var Game = (function () {
     return Game;
 }());
 window.addEventListener("load", function () {
-    Game.getInstance();
+    Game.instance();
 });
 var Level = (function () {
-    function Level() {
+    function Level(stage) {
         this.sprites = new Array();
-    }
-    Level.prototype.initTexture = function (stage) {
-        var id = Game.getInstance().getPIXI().loader.resources["./images/tilesheet.json"].textures;
+        var id = PIXI.loader.resources["./assets/tilesheet.json"].textures;
         this.createGroundRow(stage, id, 10);
-    };
+    }
     Level.prototype.createGroundRow = function (stage, id, num) {
         for (var i = 0; i < num; i++) {
             var sprite = new PIXI.Sprite(id["2.png"]);
             sprite.position.x = i * sprite.width;
-            sprite.position.y = Game.getInstance().canvasHeigth - sprite.height;
+            sprite.position.y = Game.instance().canvasHeigth - sprite.height;
             this.sprites.push(sprite);
             stage.addChild(sprite);
         }
@@ -221,7 +216,7 @@ var Level = (function () {
 var MapSpritesPool = (function () {
     function MapSpritesPool() {
         this.sprites = [];
-        var id = Game.getInstance().getPIXI().loader.resources["./images/tilesheet.json"].textures;
+        var id = Game.instance().PIXI().loader.resources["./images/tilesheet.json"].textures;
         this.addMapSprites(6, id);
     }
     MapSpritesPool.prototype.addMapSprites = function (amount, id) {

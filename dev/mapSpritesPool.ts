@@ -2,7 +2,7 @@ class MapSpritesPool {
 	private sprites: Array<PIXI.Sprite>
 	constructor() {
 		this.sprites = []
-		let id = Game.getInstance().getPIXI().loader.resources["./images/tilesheet.json"].textures
+		let id = Game.instance().PIXI().loader.resources["./images/tilesheet.json"].textures
 		this.addMapSprites(6, id)
 	}
 
