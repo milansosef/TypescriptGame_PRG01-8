@@ -11,6 +11,7 @@ class Arrow extends GameObject {
 		this.sprite.x = character_x
 		this.sprite.y = character_y
 		this.speed = s
+		// console.log("Hi")
 
 		//Set sprite width and height
 		this.sprite.width = 200
@@ -20,8 +21,8 @@ class Arrow extends GameObject {
 		this.sprite.rotation = aimAngle
 
 		//Set arrow speed
-		this.x_speed = Math.cos(this.sprite.rotation) * this.speed
-		this.y_speed = Math.sin(this.sprite.rotation) * this.speed
+		this.xSpeed = Math.cos(this.sprite.rotation) * this.speed
+		this.ySpeed = Math.sin(this.sprite.rotation) * this.speed
 
 		// console.log('sprite.rotation: ' + this.sprite.rotation)
 	}
@@ -43,10 +44,10 @@ class Arrow extends GameObject {
 			this.sprite.rotation -= 0.01
 		}
 
-		this.y_speed += 0.1 //Gravity
+		this.ySpeed += 0.1 //Gravity
 		//Apply speed
-		this.sprite.x += this.x_speed
-		this.sprite.y += this.y_speed
+		this.sprite.x += this.xSpeed
+		this.sprite.y += this.ySpeed
 	}
 
 	private checkOutofScreen(): void {

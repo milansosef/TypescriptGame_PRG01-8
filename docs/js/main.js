@@ -11,13 +11,16 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var GameObject = (function () {
     function GameObject(img) {
+        this.object = new PIXI.Container();
         this.sprite = new PIXI.Sprite();
         this.speed = 0;
-        this.x_speed = 0;
-        this.y_speed = 0;
+        this.xSpeed = 0;
+        this.ySpeed = 0;
         this.imgSource = img;
         this.sprite.texture = PIXI.loader.resources[this.imgSource].texture;
-        Game.instance().getPIXI().stage.addChild(this.sprite);
+        this.object.addChild(this.sprite);
+        this.getColliderSprite();
+        Game.instance().getPIXI().stage.addChild(this.object);
         this.sprite.anchor.x = 0.5;
         this.sprite.anchor.y = 0.5;
     }
@@ -26,6 +29,20 @@ var GameObject = (function () {
     };
     GameObject.prototype.getSprite = function () {
         return this.sprite;
+    };
+    GameObject.prototype.getColliderSprite = function () {
+        if (!this.colliderSprite) {
+            var colliderRect = new PIXI.Graphics();
+            colliderRect.beginFill(0x66CCFF);
+            colliderRect.drawRect(this.sprite.x, this.sprite.y + 10, 60, 120);
+            colliderRect.endFill();
+            var colliderTexture = Game.instance().getPIXI().renderer.generateTexture(colliderRect);
+            this.colliderSprite = new PIXI.Sprite(colliderTexture);
+            this.colliderSprite.anchor.x = 0.5;
+            this.colliderSprite.anchor.y = 0.5;
+            this.object.addChild(this.colliderSprite);
+        }
+        return this.colliderSprite;
     };
     GameObject.prototype.update = function () { };
     GameObject.prototype.removeMe = function () {
@@ -42,8 +59,8 @@ var Arrow = (function (_super) {
         _this.sprite.width = 200;
         _this.sprite.height = 200;
         _this.sprite.rotation = aimAngle;
-        _this.x_speed = Math.cos(_this.sprite.rotation) * _this.speed;
-        _this.y_speed = Math.sin(_this.sprite.rotation) * _this.speed;
+        _this.xSpeed = Math.cos(_this.sprite.rotation) * _this.speed;
+        _this.ySpeed = Math.sin(_this.sprite.rotation) * _this.speed;
         return _this;
     }
     Arrow.prototype.update = function () {
@@ -57,9 +74,9 @@ var Arrow = (function (_super) {
         else {
             this.sprite.rotation -= 0.01;
         }
-        this.y_speed += 0.1;
-        this.sprite.x += this.x_speed;
-        this.sprite.y += this.y_speed;
+        this.ySpeed += 0.1;
+        this.sprite.x += this.xSpeed;
+        this.sprite.y += this.ySpeed;
     };
     Arrow.prototype.checkOutofScreen = function () {
         if (this.sprite.position.x < 0 - this.sprite.width || this.sprite.position.x > Game.instance().canvasWidth) {
@@ -75,14 +92,15 @@ var Character = (function (_super) {
         _this.left = false;
         _this.right = false;
         _this.up = false;
+        _this.isOnGround = true;
+        _this.jumpHeight = 30;
+        _this.gravity = 1.5;
         _this.aimAngle = 0;
         _this.isReloading = false;
-        _this.isJumping = false;
-        _this.movementController = new movementController(_this);
         _this.sprite.width = 200;
         _this.sprite.height = 200;
-        _this.sprite.position.x = Game.instance().getPIXI().stage.width / 2 - _this.sprite.width / 2;
-        _this.sprite.position.y = Game.instance().getPIXI().stage.height / 2 - _this.sprite.height / 2;
+        _this.object.position.x = Game.instance().getPIXI().stage.width / 2 - _this.sprite.width / 2;
+        _this.object.position.y = Game.instance().getPIXI().stage.height / 2 - _this.sprite.height / 2;
         window.addEventListener("keydown", function (e) { return _this.keyListener(e); });
         window.addEventListener("keyup", function (e) { return _this.keyListener(e); });
         window.addEventListener("mousemove", function (e) { return _this.updateAim(e); });
@@ -91,18 +109,56 @@ var Character = (function (_super) {
     }
     Character.prototype.update = function () {
         _super.prototype.update.call(this);
-        this.movementController.update();
+        if (this.up && this.isOnGround == true) {
+            this.ySpeed -= this.jumpHeight;
+            this.isOnGround = false;
+        }
+        if (this.left) {
+            this.xSpeed -= 0.5;
+        }
+        if (this.right) {
+            this.xSpeed += 0.5;
+        }
+        this.object.x += this.xSpeed;
+        this.object.y += this.ySpeed;
+        this.ySpeed += this.gravity;
+        this.xSpeed *= 0.9;
+        this.ySpeed *= 0.9;
     };
     Character.prototype.shoot = function () {
         var arrowSpeed = 10;
-        Game.instance().addArrow(new Arrow(this.sprite.x, this.sprite.y, this.aimAngle, arrowSpeed));
+        Game.instance().addArrow(new Arrow(this.object.x, this.object.y, this.aimAngle, arrowSpeed));
     };
     Character.prototype.updateAim = function (event) {
         var mouseX = event.clientX;
         var mouseY = event.clientY;
-        mouseX -= this.sprite.x;
-        mouseY -= this.sprite.y;
+        mouseX -= this.object.x;
+        mouseY -= this.object.y;
         this.aimAngle = Math.atan2(mouseY, mouseX);
+    };
+    Character.prototype.handleCollision = function (collision, platform) {
+        if (collision) {
+            if (collision === "bottom" && this.ySpeed >= 0) {
+                console.log("Collision at bottom");
+                this.isOnGround = true;
+                this.ySpeed = -this.gravity;
+            }
+            else if (collision === "top" && this.ySpeed <= 0) {
+                this.ySpeed = 0;
+                console.log("Collision at top");
+            }
+            else if (collision === "right" && this.xSpeed >= 0) {
+                this.xSpeed = 0;
+                console.log("Collision at right");
+            }
+            else if (collision === "left" && this.xSpeed <= 0) {
+                this.xSpeed = 0;
+                console.log("Collision at left");
+            }
+            if (collision !== "bottom" && this.ySpeed > 0) {
+                this.isOnGround = false;
+            }
+        }
     };
     Character.prototype.keyListener = function (event) {
         var key_state = (event.type == "keydown") ? true : false;
@@ -137,9 +193,7 @@ var Game = (function () {
         this.PIXI.stage.addChild(this.tiledMap);
         PIXI.loader
             .add([
-            "./assets/map_x64.tmx",
-            "./assets/tilesheet.json",
-            "./assets/images/bg.png",
+            "./assets/tileMaps/map_x64.tmx",
             "./assets/images/archer.png",
             "./assets/images/Arrow.png"
         ])
@@ -151,14 +205,11 @@ var Game = (function () {
         }
         return Game.game_instance;
     };
-    Game.prototype.getPIXI = function () {
-        return this.PIXI;
-    };
     Game.prototype.setup = function () {
         var _this = this;
         this.character = new Character();
         this.arrows = new Array();
-        this.tiledMap.addChild(new PIXI.extras.TiledMap("./assets/map_x64.tmx"));
+        this.tiledMap.addChild(new PIXI.extras.TiledMap("./assets/tileMaps/map_x64.tmx"));
         for (var _i = 0, _a = this.tiledMap.children[0].children[2].children; _i < _a.length; _i++) {
             var t = _a[_i];
             this.platforms.push(t);
@@ -167,23 +218,38 @@ var Game = (function () {
             var p = _c[_b];
             p.texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
         }
-        console.log(this.platforms);
         this.PIXI.ticker.add(function () { return _this.gameLoop(); });
     };
     Game.prototype.gameLoop = function () {
-        for (var _i = 0, _a = this.platforms; _i < _a.length; _i++) {
-            var p = _a[_i];
-            var collision = this.bump.hit(p, this.character.getSprite(), false, true, false);
-        }
         this.character.update();
-        for (var _b = 0, _c = this.arrows; _b < _c.length; _b++) {
-            var a = _c[_b];
+        this.checkCharacterVsPlatforms();
+        for (var _i = 0, _a = this.arrows; _i < _a.length; _i++) {
+            var a = _a[_i];
             a.update();
         }
         this.PIXI.renderer.render(this.PIXI.stage);
     };
     Game.prototype.addArrow = function (a) {
         this.arrows.push(a);
+    };
+    Game.prototype.checkCharacterVsPlatforms = function () {
+        var _this = this;
+        var characterVsPlatforms;
+        for (var _i = 0, _a = this.platforms; _i < _a.length; _i++) {
+            var p = _a[_i];
+            characterVsPlatforms = this.bump.hit(this.character.getColliderSprite(), p, true, false, true, function (collision, platform) {
+                _this.character.handleCollision(collision, platform);
+            });
+        }
+    };
+    Game.prototype.getPIXI = function () {
+        return this.PIXI;
+    };
+    Game.prototype.getBump = function () {
+        return this.bump;
+    };
+    Game.prototype.getPlatforms = function () {
+        return this.platforms;
     };
     return Game;
 }());
@@ -207,42 +273,20 @@ var Level = (function () {
     };
     return Level;
 }());
-var movementController = (function () {
-    function movementController(c) {
-        this.character = c;
-    }
-    movementController.prototype.update = function () {
-        if (this.character.up && this.character.isJumping == false) {
-            this.character.y_speed -= 80;
-            this.character.isJumping = true;
-        }
-        if (this.character.left) {
-            this.character.x_speed -= 0.5;
-        }
-        if (this.character.right) {
-            this.character.x_speed += 0.5;
-        }
-        this.character.sprite.x += this.character.x_speed;
-        this.character.sprite.y += this.character.y_speed;
-        this.character.y_speed += 1.5;
-        this.character.x_speed *= 0.9;
-        this.character.y_speed *= 0.9;
-        if (this.character.sprite.y > window.innerHeight - 150) {
-            this.character.isJumping = false;
-            this.character.sprite.y = window.innerHeight - 150;
-            this.character.y_speed = 0;
-        }
-    };
-    return movementController;
-}());
 var Util = (function () {
     function Util() {
     }
-    Util.checkCollision = function (a, b) {
-        return (a.left <= b.right &&
-            b.left <= a.right &&
-            a.top <= b.bottom &&
-            b.top <= a.bottom);
+    Util.checkCharacterVsPlatforms = function (c) {
+        var character = c.getColliderSprite();
+        var platforms = Game.instance().getPlatforms();
+        var characterVsPlatforms;
+        for (var _i = 0, platforms_1 = platforms; _i < platforms_1.length; _i++) {
+            var p = platforms_1[_i];
+            characterVsPlatforms = Game.instance().getBump().hit(character, p, true, false, true, function (collision, platform) {
+                console.log("Hit at" + collision);
+            });
+        }
+        return characterVsPlatforms;
     };
     return Util;
 }());
