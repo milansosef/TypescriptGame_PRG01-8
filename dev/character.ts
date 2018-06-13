@@ -5,24 +5,23 @@ class Character extends GameObject {
 	private right: boolean = false
 	private up: boolean = false
 	private isOnGround: boolean = true
-	private jumpHeight: number = 30
+	private jumpHeight: number = 40
 	private gravity: number = 1.5
 	// private frictionX: number
 
 	private aimAngle: number = 0
 	private isReloading: boolean = false
 
-
 	constructor() {
-		super('./assets/images/archer.png')
+		super('./assets/images/archer.png', 60, 120)
 
 		//Set the sprites width and height
 		this.sprite.width = 200
 		this.sprite.height = 200
 
 		//Set the sprites position
-		this.object.position.x = Game.instance().getPIXI().stage.width / 2 - this.sprite.width / 2
-		this.object.position.y = Game.instance().getPIXI().stage.height / 2 - this.sprite.height / 2
+		this.colliderSprite.x = Game.instance().getPIXI().stage.width / 2 - this.sprite.width / 2
+		this.colliderSprite.y = Game.instance().getPIXI().stage.height / 2 - this.sprite.height / 2
 
 		// Add listeners
 		window.addEventListener("keydown", (e: KeyboardEvent) => this.keyListener(e))
@@ -33,6 +32,7 @@ class Character extends GameObject {
 
 	public update(): void {
 		super.update()
+
 		if (this.up && this.isOnGround == true) {
 			this.ySpeed -= this.jumpHeight
 			this.isOnGround = false
@@ -46,24 +46,26 @@ class Character extends GameObject {
 			this.xSpeed += 0.5
 		}
 
-		this.object.x += this.xSpeed
-		this.object.y += this.ySpeed
-
 		//Gravity
 		this.ySpeed += this.gravity
 
 		//Friction
 		this.xSpeed *= 0.9
 		this.ySpeed *= 0.9
+		
+		//Adjust speed
+		this.colliderSprite.x += this.xSpeed
+		this.colliderSprite.y += this.ySpeed
 	}
 
+	//TODO: Set speed based on bow drag
 	private shoot(): void {
-		//TODO: Set speed based on bow drag
+
 		//Set speed multiplier
 		let arrowSpeed = 10
 
 		//Shoot an arrow
-		Game.instance().addArrow(new Arrow(this.object.x, this.object.y, this.aimAngle, arrowSpeed))
+		Game.instance().addArrow(new Arrow(this.colliderSprite.x, this.colliderSprite.y, this.aimAngle, arrowSpeed))
 	}
 
 	private updateAim(event: MouseEvent): void {
@@ -71,8 +73,8 @@ class Character extends GameObject {
 		let mouseX = event.clientX
 		let mouseY = event.clientY
 
-		mouseX -= this.object.x
-		mouseY -= this.object.y
+		mouseX -= this.colliderSprite.x
+		mouseY -= this.colliderSprite.y
 
 		this.aimAngle = Math.atan2(mouseY, mouseX)
 	}
@@ -80,34 +82,33 @@ class Character extends GameObject {
 	public handleCollision(collision: any, platform: any) {
 		if (collision) {
 			if (collision === "bottom" && this.ySpeed >= 0) {
-				console.log("Collision at bottom")
-				//Tell the game that the player is on the ground if
+				// console.log("Collision at bottom")
+
+				//Tell the game that the character is on the ground if
 				//it's standing on top of a platform
 				this.isOnGround = true;
 
 				//Neutralize gravity by applying its
-				//exact opposite force to the character's vy
-				// player.vy = -player.gravity;
-				this.ySpeed = -this.gravity;
+				//exact opposite force to the character's ySpeed
+				this.ySpeed -= this.gravity;
 			}
 			else if (collision === "top" && this.ySpeed <= 0) {
 				this.ySpeed = 0;
-				console.log("Collision at top")
+				// console.log("Collision at top")
 			}
 			else if (collision === "right" && this.xSpeed >= 0) {
 				this.xSpeed = 0;
-				console.log("Collision at right")
+				// console.log("Collision at right")
 			}
 			else if (collision === "left" && this.xSpeed <= 0) {
 				this.xSpeed = 0;
-				console.log("Collision at left")
+				// console.log("Collision at left")
 			}
 
 			//Set `isOnGround` to `false` if the bottom of the player
 			//isn't touching the platform
 			if (collision !== "bottom" && this.ySpeed > 0) {
 				this.isOnGround = false;
-
 			}
 		}
 	}

@@ -3,7 +3,6 @@ class Game {
 	private PIXI: PIXI.Application
 	private bump: any = new Bump(PIXI)
 
-	// private level: Level
 	private tiledMap: any
 	private platforms: Array<PIXI.extras.AnimatedSprite> = []
 	private character: Character
@@ -63,13 +62,12 @@ class Game {
 	}
 
 	private gameLoop(): void {
-
 		//Update character
 		this.character.update()
 
 		//Check collision
 		this.checkCharacterVsPlatforms()
-
+		
 		//Update arrows
 		for (let a of this.arrows) {
 			a.update()
@@ -91,7 +89,7 @@ class Game {
 			characterVsPlatforms = this.bump.hit(
 				this.character.getColliderSprite(),
 				p,
-				true, false, true,
+				true, true, true,
 				(collision: any, platform: any) => {
 					//`collision` tells you the side on player that the collision occurred on.
 					//`platform` is the sprite from the `world.platforms` array
@@ -106,7 +104,7 @@ class Game {
 	public getPIXI(): PIXI.Application {
 		return this.PIXI
 	}
-
+	
 	public getBump(): any {
 		return this.bump
 	}

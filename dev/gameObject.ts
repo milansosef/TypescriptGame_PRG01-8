@@ -1,15 +1,22 @@
 class GameObject {
 	protected object = new PIXI.Container()
+
 	protected sprite = new PIXI.Sprite()
 	private imgSource: string
+
 	protected colliderSprite: PIXI.Sprite
+	protected colliderWidth: number
+	protected colliderHeight: number
 
 	protected speed: number = 0
 	protected xSpeed: number = 0
 	protected ySpeed: number = 0
 
-	constructor(img: string) {
+	constructor(img: string, cWidth: number, cHeight: number) {
 		this.imgSource = img
+		this.colliderWidth = cWidth
+		this.colliderHeight = cHeight
+		
 		this.sprite.texture = PIXI.loader.resources[this.imgSource].texture
 		this.object.addChild(this.sprite)
 		this.getColliderSprite()
@@ -21,24 +28,18 @@ class GameObject {
 		this.sprite.anchor.y = 0.5
 	}
 
-	public getRect() {
-		return this.sprite.getBounds()
-	}
-
 	public getSprite(): PIXI.Sprite {
 		return this.sprite
 	}
 
-	// public getCollider(): PIXI.Graphics {
-	// 	return this.collider
-	// }
-
 	public getColliderSprite() {
 		if (!this.colliderSprite) {
+
 			//Create collider rectangle
 			let colliderRect = new PIXI.Graphics()
-			colliderRect.beginFill(0x66CCFF)
-			colliderRect.drawRect(this.sprite.x, this.sprite.y + 10, 60, 120) //100
+			colliderRect.visible = false
+			// colliderRect.beginFill(0x66CCFF)
+			colliderRect.drawRect(this.sprite.x, this.sprite.y, this.colliderWidth, this.colliderHeight) //100
 			colliderRect.endFill()
 
 			//Create collider texture
@@ -55,7 +56,18 @@ class GameObject {
 		return this.colliderSprite
 	}
 
-	public update(): void { }
+	// public getCollider(): PIXI.Graphics {
+	// 	return this.collider
+	// }
+
+	public getRect() {
+		return this.sprite.getBounds()
+	}
+
+	public update(): void { 
+		this.sprite.x = this.colliderSprite.x
+		this.sprite.y = this.colliderSprite.y
+	}
 
 	public removeMe(): void {
 		//TODO: Remove sprite
