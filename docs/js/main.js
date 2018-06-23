@@ -56,36 +56,49 @@ var GameObject = (function () {
 }());
 var Arrow = (function (_super) {
     __extends(Arrow, _super);
-    function Arrow(character_x, character_y, aimAngle, s) {
+    function Arrow(c, character_x, character_y, aimAngle, s) {
         var _this = _super.call(this, './assets/images/Arrow.png', 60, 10) || this;
+        _this.fireActive = false;
+        c.subscribe(_this);
         _this.speed = s;
         _this.object.x = character_x;
         _this.object.y = character_y;
         _this.sprite.width = 200;
         _this.sprite.height = 200;
         _this.colliderSprite.rotation = aimAngle;
-        _this.xSpeed = Math.cos(_this.colliderSprite.rotation) * _this.speed;
-        _this.ySpeed = Math.sin(_this.colliderSprite.rotation) * _this.speed;
+        _this.setSpeed();
         return _this;
     }
+    Arrow.prototype.notify = function () {
+        this.fireActive = true;
+        this.speed = 20;
+        this.setSpeed();
+        console.log("Im on fire");
+    };
+    Arrow.prototype.setSpeed = function () {
+        this.xSpeed = Math.cos(this.colliderSprite.rotation) * this.speed;
+        this.ySpeed = Math.sin(this.colliderSprite.rotation) * this.speed;
+    };
     Arrow.prototype.update = function () {
         _super.prototype.update.call(this);
         this.checkOutofScreen();
         var rightUp = this.colliderSprite.rotation < 0 && this.colliderSprite.rotation > Math.PI / -2;
         var rightDown = this.colliderSprite.rotation < Math.PI / 2 && this.colliderSprite.rotation > 0;
-        if (rightUp || rightDown) {
-            this.colliderSprite.rotation += 0.01;
-        }
-        else {
-            this.colliderSprite.rotation -= 0.01;
+        if (!this.fireActive) {
+            this.ySpeed += 0.1;
+            if (rightUp || rightDown) {
+                this.colliderSprite.rotation += 0.01;
+            }
+            else {
+                this.colliderSprite.rotation -= 0.01;
+            }
         }
         this.sprite.rotation = this.colliderSprite.rotation;
-        this.ySpeed += 0.1;
         this.colliderSprite.x += this.xSpeed;
         this.colliderSprite.y += this.ySpeed;
     };
     Arrow.prototype.checkOutofScreen = function () {
-        if (this.object.position.x < 0 - this.object.width || this.object.position.x > Game.instance().canvasWidth) {
+        if (this.colliderSprite.position.x < 0 - this.colliderSprite.width || this.colliderSprite.position.x > Game.instance().canvasWidth) {
             this.removeMe();
             console.log("remove");
         }
@@ -108,12 +121,25 @@ var Character = (function (_super) {
         _this.sprite.height = 200;
         _this.colliderSprite.x = Game.instance().getPIXI().stage.width / 2 - _this.sprite.width / 2;
         _this.colliderSprite.y = Game.instance().getPIXI().stage.height / 2 - _this.sprite.height / 2;
+        _this.observers = new Array();
         window.addEventListener("keydown", function (e) { return _this.keyListener(e); });
         window.addEventListener("keyup", function (e) { return _this.keyListener(e); });
         window.addEventListener("mousemove", function (e) { return _this.updateAim(e); });
         Game.instance().getPIXI().stage.on("mousedown", function () { return _this.shoot(); });
         return _this;
     }
+    Character.prototype.subscribe = function (o) {
+        this.observers.push(o);
+    };
+    Character.prototype.unsubscribe = function (o) {
+    };
+    Character.prototype.onFire = function () {
+        console.log("F key pressed");
+        for (var _i = 0, _a = this.observers; _i < _a.length; _i++) {
+            var c = _a[_i];
+            c.notify();
+        }
+    };
     Character.prototype.update = function () {
         _super.prototype.update.call(this);
         if (this.up && this.isOnGround == true) {
@@ -134,7 +160,7 @@ var Character = (function (_super) {
     };
     Character.prototype.shoot = function () {
         var arrowSpeed = 10;
-        Game.instance().addArrow(new Arrow(this.colliderSprite.x, this.colliderSprite.y, this.aimAngle, arrowSpeed));
+        Game.instance().addArrow(new Arrow(this, this.colliderSprite.x, this.colliderSprite.y, this.aimAngle, arrowSpeed));
     };
     Character.prototype.updateAim = function (event) {
         var mouseX = event.clientX;
@@ -174,6 +200,11 @@ var Character = (function (_super) {
                 break;
             case 68:
                 this.right = key_state;
+                break;
+            case 70:
+                if (key_state) {
+                    this.onFire();
+                }
                 break;
         }
     };

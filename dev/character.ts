@@ -1,6 +1,8 @@
 /// <reference path="./gameObject" />
 
-class Character extends GameObject {
+class Character extends GameObject implements Subject {
+	public observers: Observer[]
+
 	private left: boolean = false
 	private right: boolean = false
 	private up: boolean = false
@@ -23,11 +25,28 @@ class Character extends GameObject {
 		this.colliderSprite.x = Game.instance().getPIXI().stage.width / 2 - this.sprite.width / 2
 		this.colliderSprite.y = Game.instance().getPIXI().stage.height / 2 - this.sprite.height / 2
 
+		this.observers = new Array()
+
 		// Add listeners
 		window.addEventListener("keydown", (e: KeyboardEvent) => this.keyListener(e))
 		window.addEventListener("keyup", (e: KeyboardEvent) => this.keyListener(e))
 		window.addEventListener("mousemove", (e: MouseEvent) => this.updateAim(e))
 		Game.instance().getPIXI().stage.on("mousedown", () => this.shoot())
+	}
+
+	public subscribe(o: Observer): void {
+		this.observers.push(o)
+	}
+
+	public unsubscribe(o: Observer): void {
+		// remove o from this.observers
+	}
+
+	private onFire(): void {
+		console.log("F key pressed")
+		for (let c of this.observers) {
+			c.notify()
+		}
 	}
 
 	public update(): void {
@@ -52,7 +71,7 @@ class Character extends GameObject {
 		//Friction
 		this.xSpeed *= 0.9
 		this.ySpeed *= 0.9
-		
+
 		//Adjust speed
 		this.colliderSprite.x += this.xSpeed
 		this.colliderSprite.y += this.ySpeed
@@ -65,7 +84,7 @@ class Character extends GameObject {
 		let arrowSpeed = 10
 
 		//Shoot an arrow
-		Game.instance().addArrow(new Arrow(this.colliderSprite.x, this.colliderSprite.y, this.aimAngle, arrowSpeed))
+		Game.instance().addArrow(new Arrow(this, this.colliderSprite.x, this.colliderSprite.y, this.aimAngle, arrowSpeed))
 	}
 
 	private updateAim(event: MouseEvent): void {
@@ -128,6 +147,11 @@ class Character extends GameObject {
 			//D; Walk right
 			case 68:
 				this.right = key_state
+				break
+			case 70:
+				if (key_state) { 
+					this.onFire() 
+				 }
 				break
 		}
 	}

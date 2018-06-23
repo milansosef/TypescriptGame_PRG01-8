@@ -2,44 +2,11 @@ body, html {
 	margin:0; padding:0;
 	width:100%; height:100%;
 	overflow: hidden;
+	display: flex;
+	justify-content: center;
+	align-items: center
 }
 
 * {
 	box-sizing: border-box;
 }
-
-/*
-body, html {
-	margin:0; padding:0;
-	width:100%; height:100%;
-	overflow: hidden;
-}
-
-game {
-	width:100vw; height:100vh;
-}
-
-game * {
-	position: absolute;
-	display: block;
-	margin:0px; padding:0px;
-	box-sizing: border-box;
-	background-repeat: no-repeat;
-}
-
-background {
-	width: 100%; height: 100%;
-	background-image: url(../images/bg.png);
-	background-repeat: repeat-x;
-	background-position: bottom;
-}
-
-character {
-	width: 512px; height: 512px;
-	background-image: url(../images/archer.png);
-}
-
-arrow {
-	width: 512px; height: 512px;
-	background-image: url(../images/arrow.png);
-} */

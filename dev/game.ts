@@ -2,6 +2,7 @@ class Game {
 	private static game_instance: Game
 	private PIXI: PIXI.Application
 	private bump: any = new Bump(PIXI)
+	private scene: Scene
 
 	private tiledMap: any
 	private platforms: Array<PIXI.extras.AnimatedSprite> = []
