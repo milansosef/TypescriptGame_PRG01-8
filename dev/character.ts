@@ -22,8 +22,8 @@ class Character extends GameObject implements Subject {
 		this.sprite.height = 200
 
 		//Set the sprites position
-		this.colliderSprite.x = Game.instance().getPIXI().stage.width / 2 - this.sprite.width / 2
-		this.colliderSprite.y = Game.instance().getPIXI().stage.height / 2 - this.sprite.height / 2
+		this.sprite.x = Game.instance().getPIXI().stage.width / 2 - this.sprite.width / 2
+		this.sprite.y = Game.instance().getPIXI().stage.height / 2 - this.sprite.height / 2
 
 		this.observers = new Array()
 
@@ -79,12 +79,20 @@ class Character extends GameObject implements Subject {
 
 	//TODO: Set speed based on bow drag
 	private shoot(): void {
+		if (!this.isReloading) {
+			//Set speed multiplier
+			let arrowSpeed = 10
 
-		//Set speed multiplier
-		let arrowSpeed = 10
+			//Shoot an arrow
+			Game.instance().addArrow(new Arrow(this, this.colliderSprite.x, this.colliderSprite.y, this.aimAngle, arrowSpeed))
 
-		//Shoot an arrow
-		Game.instance().addArrow(new Arrow(this, this.colliderSprite.x, this.colliderSprite.y, this.aimAngle, arrowSpeed))
+			this.isReloading = true
+			setTimeout(() => {
+				this.isReloading = false
+			}, 1000)
+		} else {
+			console.log("Reloading")
+		}
 	}
 
 	private updateAim(event: MouseEvent): void {
@@ -149,9 +157,9 @@ class Character extends GameObject implements Subject {
 				this.right = key_state
 				break
 			case 70:
-				if (key_state) { 
-					this.onFire() 
-				 }
+				if (key_state) {
+					this.onFire()
+				}
 				break
 		}
 	}

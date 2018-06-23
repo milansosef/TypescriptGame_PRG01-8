@@ -7,6 +7,7 @@ class Game {
 	private tiledMap: any
 	private platforms: Array<PIXI.extras.AnimatedSprite> = []
 	private character: Character
+	private targetDummy: TargetDummy
 	private arrows: Array<Arrow>
 
 	public canvasWidth = 1280
@@ -37,7 +38,10 @@ class Game {
 				// "./assets/tilesheet.json",
 				// "./assets/images/bg.png",
 				"./assets/images/archer.png",
-				"./assets/images/Arrow.png"
+				"./assets/images/Arrow.png",
+				"./assets/images/dummy_1.png",
+				"./assets/images/dummy_2.png",
+				"./assets/images/dummy_3.png"
 			])
 			.load(() => this.setup())
 	}
@@ -45,6 +49,7 @@ class Game {
 	private setup(): void {
 		// this.level = new Level(this.app.stage)
 		this.character = new Character()
+		this.targetDummy = new TargetDummy()
 		this.arrows = new Array<Arrow>()
 		this.tiledMap.addChild(new PIXI.extras.TiledMap("./assets/tileMaps/map_x64.tmx"))
 
@@ -68,7 +73,9 @@ class Game {
 
 		//Check collision
 		this.checkCharacterVsPlatforms()
-		
+		this.checkDummyVsArrows()
+		this.checkPlatformsVsArrows()
+
 		//Update arrows
 		for (let a of this.arrows) {
 			a.update()
@@ -83,21 +90,52 @@ class Game {
 		this.arrows.push(a)
 	}
 
-	private checkCharacterVsPlatforms() {
+	//Remove an arrow
+	public removeArrow(a: Arrow): void {
+		console.log("Remove arrow")
+		//TODO: Fix remove from stage
+		// this.PIXI.stage.removeChild(a)
+		this.character.unsubscribe(a)
+		let index = this.arrows.indexOf(a)
+		if (index !== -1) {
+			this.arrows.splice(index, 1);
+		}
+
+	}
+
+	private checkCharacterVsPlatforms(): void {
 		let characterVsPlatforms
 		for (let p of this.platforms) {
-			// let collision = Game.instance().getBump().hit(p, character, true, true, true)
 			characterVsPlatforms = this.bump.hit(
 				this.character.getColliderSprite(),
 				p,
-				true, true, true,
+				true, false, true,
 				(collision: any, platform: any) => {
-					//`collision` tells you the side on player that the collision occurred on.
-					//`platform` is the sprite from the `world.platforms` array
-					//that the player is colliding with
+					//'collision' tells you the side on player that the collision occurred on.
+					//`platform` is the sprite from the platforms array that the character is colliding with.
 					this.character.handleCollision(collision, platform)
 				}
 			)
+		}
+	}
+	
+	private checkPlatformsVsArrows(): void {
+		for (let p of this.platforms) {
+			for (let a of this.arrows) {
+				let platformsVsArrows = this.bump.hit(p, a.getColliderSprite(), false, true, true)
+				if (platformsVsArrows) {
+					a.stopMoving()
+				}
+			}
+		}
+	}
+
+	private checkDummyVsArrows(): void {
+		for (let a of this.arrows) {
+			let dummyVsArrows = this.bump.hit(this.targetDummy.getColliderSprite(), a.getColliderSprite(), false, true, true)
+			if (dummyVsArrows) {
+				a.stopMoving()
+			}
 		}
 	}
 
@@ -105,7 +143,7 @@ class Game {
 	public getPIXI(): PIXI.Application {
 		return this.PIXI
 	}
-	
+
 	public getBump(): any {
 		return this.bump
 	}

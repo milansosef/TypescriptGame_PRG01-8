@@ -5,6 +5,7 @@
 //if f pressed -> put all arrows on fire.
 class Arrow extends GameObject implements Observer {
 	private fireActive: boolean = false
+	private collided: boolean = false
 
 	constructor(c: Character, character_x: number, character_y: number, aimAngle: number, s: number) {
 		super('./assets/images/Arrow.png', 60, 10)
@@ -47,7 +48,7 @@ class Arrow extends GameObject implements Observer {
 		let rightUp = this.colliderSprite.rotation < 0 && this.colliderSprite.rotation > Math.PI / -2
 		let rightDown = this.colliderSprite.rotation < Math.PI / 2 && this.colliderSprite.rotation > 0
 
-		if (!this.fireActive) {
+		if (!this.fireActive && !this.collided) {
 			this.ySpeed += 0.1 //Gravity
 
 			//Rotate arrow right
@@ -68,12 +69,15 @@ class Arrow extends GameObject implements Observer {
 		this.colliderSprite.y += this.ySpeed
 	}
 
+	public stopMoving(): void {
+		this.collided = true
+		this.ySpeed = 0;
+		this.xSpeed = 0;
+	}
+
 	private checkOutofScreen(): void {
 		if (this.colliderSprite.position.x < 0 - this.colliderSprite.width || this.colliderSprite.position.x > Game.instance().canvasWidth) {
-			this.removeMe()
-			//TODO: unsubscribe
-			// c.unsubscribe(this)
-			console.log("remove")
+			// Game.instance().removeArrow(this)
 		}
 	}
 }
