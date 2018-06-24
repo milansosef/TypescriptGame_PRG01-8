@@ -66,7 +66,6 @@ class Arrow extends GameObject implements Observer {
 
 		this.sprite.rotation = this.colliderSprite.rotation
 
-
 		//Apply speed
 		this.colliderSprite.x += this.xSpeed
 		this.colliderSprite.y += this.ySpeed
@@ -77,6 +76,12 @@ class Arrow extends GameObject implements Observer {
 		this.collided = true
 		this.ySpeed = 0;
 		this.xSpeed = 0;
+
+		//Remove the arrow after 5 seconds.
+		setTimeout(() => {
+			Game.instance().removeArrow(this)
+			this.removeMe()
+		}, 6000)
 	}
 
 	private checkOutofScreen(): void {

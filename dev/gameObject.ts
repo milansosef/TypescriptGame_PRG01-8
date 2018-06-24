@@ -71,7 +71,8 @@ class GameObject {
 
 	public removeMe(): void {
 		//TODO: Remove sprite
-		// this.sprite.removeAllListeners()
+		// this.object.removeChild(this.sprite)
+		Game.instance().getPIXI().stage.removeChild(this.object)
 	}
 
 }

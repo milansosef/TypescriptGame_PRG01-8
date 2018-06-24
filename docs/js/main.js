@@ -51,6 +51,7 @@ var GameObject = (function () {
         this.sprite.y = this.colliderSprite.y;
     };
     GameObject.prototype.removeMe = function () {
+        Game.instance().getPIXI().stage.removeChild(this.object);
     };
     return GameObject;
 }());
@@ -101,10 +102,15 @@ var Arrow = (function (_super) {
         this.colliderSprite.y += this.ySpeed;
     };
     Arrow.prototype.stopMoving = function () {
+        var _this = this;
         this.object.removeChild(this.colliderSprite);
         this.collided = true;
         this.ySpeed = 0;
         this.xSpeed = 0;
+        setTimeout(function () {
+            Game.instance().removeArrow(_this);
+            _this.removeMe();
+        }, 6000);
     };
     Arrow.prototype.checkOutofScreen = function () {
         if (this.colliderSprite.position.x < 0 - this.colliderSprite.width || this.colliderSprite.position.x > Game.instance().canvasWidth) {
@@ -120,14 +126,16 @@ var Character = (function (_super) {
         _this.right = false;
         _this.up = false;
         _this.isOnGround = true;
-        _this.jumpHeight = 40;
+        _this.jumpHeight = 50;
         _this.gravity = 1.5;
         _this.aimAngle = 0;
         _this.isReloading = false;
         _this.sprite.width = 200;
         _this.sprite.height = 200;
-        _this.sprite.x = Game.instance().getPIXI().stage.width / 2 - _this.sprite.width / 2;
-        _this.sprite.y = Game.instance().getPIXI().stage.height / 2 - _this.sprite.height / 2;
+        console.log("width", Game.instance().getPIXI().stage.width);
+        console.log("height", Game.instance().getPIXI().stage.height);
+        _this.colliderSprite.position.x = 650;
+        _this.colliderSprite.position.y = 580;
         _this.observers = new Array();
         window.addEventListener("keydown", function (e) { return _this.keyListener(e); });
         window.addEventListener("keyup", function (e) { return _this.keyListener(e); });
@@ -282,10 +290,6 @@ var Game = (function () {
             var t = _a[_i];
             this.platforms.push(t);
         }
-        for (var _b = 0, _c = this.platforms; _b < _c.length; _b++) {
-            var p = _c[_b];
-            p.texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
-        }
         this.PIXI.ticker.add(function () { return _this.gameLoop(); });
     };
     Game.prototype.gameLoop = function () {
@@ -368,7 +372,6 @@ var TargetDummy = (function (_super) {
     function TargetDummy() {
         var _this = _super.call(this, "./assets/images/dummy_1.png", 40, 60) || this;
         _this.timesHit = 0;
-        console.log(_this.sprite.x);
         _this.object.x = 600;
         _this.object.y = 344;
         return _this;

@@ -4,11 +4,7 @@ class TargetDummy extends GameObject {
 
 	constructor() {
 		super("./assets/images/dummy_1.png", 40, 60)
-
-		// this.behavior = new Idle(this)
-		// this.behavior.performBehavior()
-
-		console.log(this.sprite.x)
+		
 		this.object.x = 600
 		this.object.y = 344
 	}

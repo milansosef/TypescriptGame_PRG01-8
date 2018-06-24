@@ -1,13 +1,13 @@
 /// <reference path="./gameObject" />
 
-class Character extends GameObject implements Subject {
+class Character extends GameObject implements Subject{
 	public observers: Observer[]
 
 	private left: boolean = false
 	private right: boolean = false
 	private up: boolean = false
 	private isOnGround: boolean = true
-	private jumpHeight: number = 40
+	private jumpHeight: number = 50
 	private gravity: number = 1.5
 	// private frictionX: number
 
@@ -22,8 +22,12 @@ class Character extends GameObject implements Subject {
 		this.sprite.height = 200
 
 		//Set the sprites position
-		this.sprite.x = Game.instance().getPIXI().stage.width / 2 - this.sprite.width / 2
-		this.sprite.y = Game.instance().getPIXI().stage.height / 2 - this.sprite.height / 2
+		// this.object.x = Game.instance().getPIXI().stage.width / 2 - this.sprite.width / 2
+		// this.object.y = Game.instance().getPIXI().stage.height / 2 - this.sprite.height / 2
+		console.log("width", Game.instance().getPIXI().stage.width)
+		console.log("height", Game.instance().getPIXI().stage.height)
+		this.colliderSprite.position.x = 650
+		this.colliderSprite.position.y = 580
 
 		this.observers = new Array()
 

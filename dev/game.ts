@@ -37,8 +37,6 @@ class Game {
 		PIXI.loader
 			.add([
 				"./assets/tileMaps/map_x64.tmx",
-				// "./assets/tilesheet.json",
-				// "./assets/images/bg.png",
 				"./assets/images/archer.png",
 				"./assets/images/Arrow.png",
 				"./assets/images/dummy_1.png",
@@ -75,9 +73,9 @@ class Game {
 		}
 
 		//TODO: Trying to fix texture bleeding
-		for (let p of this.platforms) {
-			p.texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST
-		}
+		// for (let p of this.platforms) {
+		// 	p.texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST
+		// }
 
 		//Gameloop (PIXI version)
 		this.PIXI.ticker.add(() => this.gameLoop())
@@ -113,7 +111,6 @@ class Game {
 	public removeArrow(a: Arrow): void {
 		console.log("Remove arrow")
 		//TODO: Fix remove from stage
-		// this.PIXI.stage.removeChild(a)
 		this.character.unsubscribe(a)
 		let index = this.arrows.indexOf(a)
 		if (index !== -1) {
