@@ -71,15 +71,15 @@ I am using the strategy pattern to make the target dummy change its behavior. De
 
 ```typescript
 switch (this.timesHit) {
-	case 0:
-		this.dummyBehaviour = new Idle(this)
-		break
-	case 1:
-		this.dummyBehaviour = new Afraid(this)
-		break
-	case 2:
-		this.dummyBehaviour = new Crying(this)
-		break
+case 0:
+	this.dummyBehaviour = new Idle(this)
+	break
+case 1:
+	this.dummyBehaviour = new Afraid(this)
+	break
+case 2:
+	this.dummyBehaviour = new Crying(this)
+	break
 }
 ```
 
@@ -99,6 +99,7 @@ This game was made using Pixi.js, a 2d rendering library.
 
 For this game I also made a UML / class diagram.
 
+![alt text](https://drive.google.com/open?id=1hNALQPdhF5up9lZ4_mZso0Ile511ThLm)
 
 Pull request week 4 for Typescript game @BrandonYuen.
 https://github.com/BrandonYuen/PRG01-8_Game/pull/1
