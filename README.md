@@ -10,8 +10,10 @@ Play online at: https://milansosef.github.io/TypescriptGame_PRG01-8/
 - Launch the project with your preffered hosting method. I use the plugin http-server.
 
 Using http-server to launch the project:
-- npm i http-server -g 
-- http-server docs
+```
+npm i http-server -g 
+http-server docs
+```
 
 ## How to play:
 
