@@ -38,7 +38,7 @@ class Game {
 			.add([
 				"./assets/tileMaps/map_x64.tmx",
 				"./assets/images/archer.png",
-				"./assets/images/Arrow.png",
+				"./assets/images/arrow.png",
 				"./assets/images/dummy_1.png",
 				"./assets/images/dummy_2.png",
 				"./assets/images/dummy_3.png"
