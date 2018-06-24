@@ -55,7 +55,7 @@ var GameObject = (function () {
 var Arrow = (function (_super) {
     __extends(Arrow, _super);
     function Arrow(c, character_x, character_y, aimAngle, s) {
-        var _this = _super.call(this, './assets/images/Arrow.png', 30, 5) || this;
+        var _this = _super.call(this, './assets/images/arrow.png', 30, 5) || this;
         _this.boostActive = false;
         _this.collided = false;
         c.subscribe(_this);

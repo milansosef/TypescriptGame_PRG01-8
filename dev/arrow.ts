@@ -8,7 +8,7 @@ class Arrow extends GameObject implements Observer {
 	private collided: boolean = false
 
 	constructor(c: Character, character_x: number, character_y: number, aimAngle: number, s: number) {
-		super('./assets/images/Arrow.png', 30, 5)
+		super('./assets/images/arrow.png', 30, 5)
 		c.subscribe(this)
 		this.speed = s
 
