@@ -1,6 +1,7 @@
 # Archer practise range
 
 Test your archery skills in the practise range. See if you can make the dummy cry!
+Play online at: https://milansosef.github.io/TypescriptGame_PRG01-8/
 
 ## How to install: 
 
