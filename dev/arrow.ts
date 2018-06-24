@@ -4,11 +4,11 @@
 //Key f -> fire button. Maak this subject. 
 //if f pressed -> put all arrows on fire.
 class Arrow extends GameObject implements Observer {
-	private fireActive: boolean = false
+	private boostActive: boolean = false
 	private collided: boolean = false
 
 	constructor(c: Character, character_x: number, character_y: number, aimAngle: number, s: number) {
-		super('./assets/images/Arrow.png', 60, 10)
+		super('./assets/images/Arrow.png', 30, 5)
 		c.subscribe(this)
 		this.speed = s
 
@@ -20,6 +20,8 @@ class Arrow extends GameObject implements Observer {
 		this.sprite.width = 200
 		this.sprite.height = 200
 
+		this.colliderSprite.anchor.y = -0.9
+
 		//Set starting rotation of the arrow
 		this.colliderSprite.rotation = aimAngle
 
@@ -28,14 +30,15 @@ class Arrow extends GameObject implements Observer {
 	}
 
 	public notify(): void {
-		//Set arrow on fire.
-		this.fireActive = true
-		this.speed = 20
-		this.setSpeed()
-		console.log("Im on fire")
+		if (!this.collided) {
+			//Boost arrow.
+			this.boostActive = true
+			this.speed = 20
+			this.setSpeed()
+		}
 	}
 
-	private setSpeed():void {
+	private setSpeed(): void {
 		this.xSpeed = Math.cos(this.colliderSprite.rotation) * this.speed
 		this.ySpeed = Math.sin(this.colliderSprite.rotation) * this.speed
 	}
@@ -48,7 +51,7 @@ class Arrow extends GameObject implements Observer {
 		let rightUp = this.colliderSprite.rotation < 0 && this.colliderSprite.rotation > Math.PI / -2
 		let rightDown = this.colliderSprite.rotation < Math.PI / 2 && this.colliderSprite.rotation > 0
 
-		if (!this.fireActive && !this.collided) {
+		if (!this.boostActive && !this.collided) {
 			this.ySpeed += 0.1 //Gravity
 
 			//Rotate arrow right
@@ -62,7 +65,7 @@ class Arrow extends GameObject implements Observer {
 		}
 
 		this.sprite.rotation = this.colliderSprite.rotation
-		
+
 
 		//Apply speed
 		this.colliderSprite.x += this.xSpeed
@@ -70,6 +73,7 @@ class Arrow extends GameObject implements Observer {
 	}
 
 	public stopMoving(): void {
+		this.object.removeChild(this.colliderSprite)
 		this.collided = true
 		this.ySpeed = 0;
 		this.xSpeed = 0;

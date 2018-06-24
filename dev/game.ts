@@ -2,7 +2,7 @@ class Game {
 	private static game_instance: Game
 	private PIXI: PIXI.Application
 	private bump: any = new Bump(PIXI)
-	private scene: Scene
+	// private scene: Scene
 
 	private tiledMap: any
 	private platforms: Array<PIXI.extras.AnimatedSprite> = []
@@ -10,6 +10,8 @@ class Game {
 	private targetDummy: TargetDummy
 	private arrows: Array<Arrow>
 
+	private scoreText: PIXI.Text
+	private points: number = 0
 	public canvasWidth = 1280
 	public canvasHeigth = 768
 
@@ -47,6 +49,20 @@ class Game {
 	}
 
 	private setup(): void {
+		//Display the score on screen
+		const style = new PIXI.TextStyle({
+			fill: [
+				"black",
+				"black"
+			],
+			fontFamily: "Impact, Charcoal, sans-serif",
+			fontSize: 28
+		})
+		this.scoreText = new PIXI.Text('Score: ' + this.points, style)
+		this.scoreText.anchor.x = -1
+		this.scoreText.anchor.y = -1
+		this.PIXI.stage.addChild(this.scoreText)
+
 		// this.level = new Level(this.app.stage)
 		this.character = new Character()
 		this.targetDummy = new TargetDummy()
@@ -70,6 +86,9 @@ class Game {
 	private gameLoop(): void {
 		//Update character
 		this.character.update()
+
+		//Update dummy
+		this.targetDummy.update()
 
 		//Check collision
 		this.checkCharacterVsPlatforms()
@@ -118,7 +137,7 @@ class Game {
 			)
 		}
 	}
-	
+
 	private checkPlatformsVsArrows(): void {
 		for (let p of this.platforms) {
 			for (let a of this.arrows) {
@@ -131,12 +150,21 @@ class Game {
 	}
 
 	private checkDummyVsArrows(): void {
+		// let index = 0
 		for (let a of this.arrows) {
 			let dummyVsArrows = this.bump.hit(this.targetDummy.getColliderSprite(), a.getColliderSprite(), false, true, true)
 			if (dummyVsArrows) {
 				a.stopMoving()
+				this.setScore()
 			}
 		}
+	}
+
+	private setScore(): void {
+		this.targetDummy.timesHit ++
+		this.points += 10
+		this.scoreText.text = "Score: " + this.points
+		console.log("Score: " + this.points)
 	}
 
 	//Get instance of PIXI

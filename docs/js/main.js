@@ -57,8 +57,8 @@ var GameObject = (function () {
 var Arrow = (function (_super) {
     __extends(Arrow, _super);
     function Arrow(c, character_x, character_y, aimAngle, s) {
-        var _this = _super.call(this, './assets/images/Arrow.png', 60, 10) || this;
-        _this.fireActive = false;
+        var _this = _super.call(this, './assets/images/Arrow.png', 30, 5) || this;
+        _this.boostActive = false;
         _this.collided = false;
         c.subscribe(_this);
         _this.speed = s;
@@ -66,15 +66,17 @@ var Arrow = (function (_super) {
         _this.object.y = character_y;
         _this.sprite.width = 200;
         _this.sprite.height = 200;
+        _this.colliderSprite.anchor.y = -0.9;
         _this.colliderSprite.rotation = aimAngle;
         _this.setSpeed();
         return _this;
     }
     Arrow.prototype.notify = function () {
-        this.fireActive = true;
-        this.speed = 20;
-        this.setSpeed();
-        console.log("Im on fire");
+        if (!this.collided) {
+            this.boostActive = true;
+            this.speed = 20;
+            this.setSpeed();
+        }
     };
     Arrow.prototype.setSpeed = function () {
         this.xSpeed = Math.cos(this.colliderSprite.rotation) * this.speed;
@@ -85,7 +87,7 @@ var Arrow = (function (_super) {
         this.checkOutofScreen();
         var rightUp = this.colliderSprite.rotation < 0 && this.colliderSprite.rotation > Math.PI / -2;
         var rightDown = this.colliderSprite.rotation < Math.PI / 2 && this.colliderSprite.rotation > 0;
-        if (!this.fireActive && !this.collided) {
+        if (!this.boostActive && !this.collided) {
             this.ySpeed += 0.1;
             if (rightUp || rightDown) {
                 this.colliderSprite.rotation += 0.01;
@@ -99,6 +101,7 @@ var Arrow = (function (_super) {
         this.colliderSprite.y += this.ySpeed;
     };
     Arrow.prototype.stopMoving = function () {
+        this.object.removeChild(this.colliderSprite);
         this.collided = true;
         this.ySpeed = 0;
         this.xSpeed = 0;
@@ -232,6 +235,7 @@ var Game = (function () {
         var _this = this;
         this.bump = new Bump(PIXI);
         this.platforms = [];
+        this.points = 0;
         this.canvasWidth = 1280;
         this.canvasHeigth = 768;
         this.PIXI = new PIXI.Application({ width: this.canvasWidth, height: this.canvasHeigth });
@@ -258,6 +262,18 @@ var Game = (function () {
     };
     Game.prototype.setup = function () {
         var _this = this;
+        var style = new PIXI.TextStyle({
+            fill: [
+                "black",
+                "black"
+            ],
+            fontFamily: "Impact, Charcoal, sans-serif",
+            fontSize: 28
+        });
+        this.scoreText = new PIXI.Text('Score: ' + this.points, style);
+        this.scoreText.anchor.x = -1;
+        this.scoreText.anchor.y = -1;
+        this.PIXI.stage.addChild(this.scoreText);
         this.character = new Character();
         this.targetDummy = new TargetDummy();
         this.arrows = new Array();
@@ -274,6 +290,7 @@ var Game = (function () {
     };
     Game.prototype.gameLoop = function () {
         this.character.update();
+        this.targetDummy.update();
         this.checkCharacterVsPlatforms();
         this.checkDummyVsArrows();
         this.checkPlatformsVsArrows();
@@ -322,8 +339,15 @@ var Game = (function () {
             var dummyVsArrows = this.bump.hit(this.targetDummy.getColliderSprite(), a.getColliderSprite(), false, true, true);
             if (dummyVsArrows) {
                 a.stopMoving();
+                this.setScore();
             }
         }
+    };
+    Game.prototype.setScore = function () {
+        this.targetDummy.timesHit++;
+        this.points += 10;
+        this.scoreText.text = "Score: " + this.points;
+        console.log("Score: " + this.points);
     };
     Game.prototype.getPIXI = function () {
         return this.PIXI;
@@ -342,17 +366,59 @@ window.addEventListener("load", function () {
 var TargetDummy = (function (_super) {
     __extends(TargetDummy, _super);
     function TargetDummy() {
-        var _this = _super.call(this, "./assets/images/dummy_1.png", 40, 50) || this;
+        var _this = _super.call(this, "./assets/images/dummy_1.png", 40, 60) || this;
+        _this.timesHit = 0;
         console.log(_this.sprite.x);
         _this.object.x = 600;
         _this.object.y = 344;
         return _this;
     }
+    TargetDummy.prototype.update = function () {
+        switch (this.timesHit) {
+            case 0:
+                this.behavior = new Idle(this);
+                break;
+            case 1:
+                this.behavior = new Afraid(this);
+                break;
+            case 2:
+                this.behavior = new Crying(this);
+                break;
+        }
+        this.behavior.performBehavior();
+    };
     return TargetDummy;
 }(GameObject));
 var Util = (function () {
     function Util() {
     }
     return Util;
+}());
+var Afraid = (function () {
+    function Afraid(t) {
+        this.targetDummy = t;
+    }
+    Afraid.prototype.performBehavior = function () {
+        this.targetDummy.getSprite().texture = PIXI.loader.resources["./assets/images/dummy_2.png"].texture;
+    };
+    return Afraid;
+}());
+var Crying = (function () {
+    function Crying(t) {
+        this.targetDummy = t;
+    }
+    Crying.prototype.performBehavior = function () {
+        this.targetDummy.getSprite().texture = PIXI.loader.resources["./assets/images/dummy_3.png"].texture;
+    };
+    return Crying;
+}());
+var Idle = (function () {
+    function Idle(t) {
+        this.targetDummy = t;
+    }
+    Idle.prototype.performBehavior = function () {
+        this.targetDummy.getSprite().texture = PIXI.loader.resources["./assets/images/dummy_1.png"].texture;
+    };
+    return Idle;
 }());
 //# sourceMappingURL=main.js.map
