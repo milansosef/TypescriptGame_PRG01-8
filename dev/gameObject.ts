@@ -32,7 +32,7 @@ class GameObject {
 		return this.sprite
 	}
 
-	public getColliderSprite() {
+	public getColliderSprite(): PIXI.Sprite {
 		if (!this.colliderSprite) {
 
 			//Create collider rectangle
@@ -54,14 +54,6 @@ class GameObject {
 			this.object.addChild(this.colliderSprite)
 		}
 		return this.colliderSprite
-	}
-
-	// public getCollider(): PIXI.Graphics {
-	// 	return this.collider
-	// }
-
-	public getRect() {
-		return this.sprite.getBounds()
 	}
 
 	public update(): void { 

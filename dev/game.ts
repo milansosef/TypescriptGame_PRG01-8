@@ -2,13 +2,13 @@ class Game {
 	private static game_instance: Game
 	private PIXI: PIXI.Application
 	private bump: any = new Bump(PIXI)
-	// private scene: Scene
 
 	private tiledMap: any
 	private platforms: Array<PIXI.extras.AnimatedSprite> = []
+
+	private gameObjects: Array<GameObject>
 	private character: Character
 	private targetDummy: TargetDummy
-	private arrows: Array<Arrow>
 
 	private scoreText: PIXI.Text
 	private points: number = 0
@@ -16,7 +16,7 @@ class Game {
 	public canvasHeigth = 768
 
 	// Singleton
-	public static instance() {
+	public static instance(): Game {
 		if (!Game.game_instance) {
 			Game.game_instance = new Game()
 		}
@@ -48,23 +48,14 @@ class Game {
 
 	private setup(): void {
 		//Display the score on screen
-		const style = new PIXI.TextStyle({
-			fill: [
-				"black",
-				"black"
-			],
-			fontFamily: "Impact, Charcoal, sans-serif",
-			fontSize: 28
-		})
-		this.scoreText = new PIXI.Text('Score: ' + this.points, style)
-		this.scoreText.anchor.x = -1
-		this.scoreText.anchor.y = -1
-		this.PIXI.stage.addChild(this.scoreText)
+		this.createScoreText()
 
-		// this.level = new Level(this.app.stage)
 		this.character = new Character()
 		this.targetDummy = new TargetDummy()
-		this.arrows = new Array<Arrow>()
+
+		this.gameObjects = new Array<GameObject>()
+		this.gameObjects.push(this.character, this.targetDummy)
+
 		this.tiledMap.addChild(new PIXI.extras.TiledMap("./assets/tileMaps/map_x64.tmx"))
 
 		//Fill platform array with tiles from tiledMap.
@@ -72,31 +63,20 @@ class Game {
 			this.platforms.push(t)
 		}
 
-		//TODO: Trying to fix texture bleeding
-		// for (let p of this.platforms) {
-		// 	p.texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST
-		// }
-
-		//Gameloop (PIXI version)
+		//Initialize gameloop (PIXI version)
 		this.PIXI.ticker.add(() => this.gameLoop())
 	}
 
 	private gameLoop(): void {
-		//Update character
-		this.character.update()
-
-		//Update dummy
-		this.targetDummy.update()
+		//Update all gameObjects
+		for (let o of this.gameObjects) {
+			o.update()
+		}
 
 		//Check collision
 		this.checkCharacterVsPlatforms()
 		this.checkDummyVsArrows()
 		this.checkPlatformsVsArrows()
-
-		//Update arrows
-		for (let a of this.arrows) {
-			a.update()
-		}
 
 		//Render the stage
 		this.PIXI.renderer.render(this.PIXI.stage)
@@ -104,19 +84,18 @@ class Game {
 
 	//Add an arrow
 	public addArrow(a: Arrow): void {
-		this.arrows.push(a)
+		this.gameObjects.push(a)
 	}
 
 	//Remove an arrow
 	public removeArrow(a: Arrow): void {
 		console.log("Remove arrow")
-		//TODO: Fix remove from stage
 		this.character.unsubscribe(a)
-		let index = this.arrows.indexOf(a)
-		if (index !== -1) {
-			this.arrows.splice(index, 1);
-		}
 
+		let index = this.gameObjects.indexOf(a)
+		if (index !== -1) {
+			this.gameObjects.splice(index, 1);
+		}
 	}
 
 	private checkCharacterVsPlatforms(): void {
@@ -137,10 +116,13 @@ class Game {
 
 	private checkPlatformsVsArrows(): void {
 		for (let p of this.platforms) {
-			for (let a of this.arrows) {
-				let platformsVsArrows = this.bump.hit(p, a.getColliderSprite(), false, true, true)
-				if (platformsVsArrows) {
-					a.stopMoving()
+			for (let o of this.gameObjects) {
+				//Type guarding
+				if (o instanceof Arrow) {
+					let platformsVsArrows = this.bump.hit(p, o.getColliderSprite(), false, true, true)
+					if (platformsVsArrows) {
+						o.stopMoving()
+					}
 				}
 			}
 		}
@@ -148,20 +130,45 @@ class Game {
 
 	private checkDummyVsArrows(): void {
 		// let index = 0
-		for (let a of this.arrows) {
-			let dummyVsArrows = this.bump.hit(this.targetDummy.getColliderSprite(), a.getColliderSprite(), false, true, true)
-			if (dummyVsArrows) {
-				a.stopMoving()
-				this.setScore()
+		for (let o of this.gameObjects) {
+			//Type guarding
+			if (o instanceof Arrow) {
+				let dummyVsArrows = this.bump.hit(this.targetDummy.getColliderSprite(), o.getColliderSprite(), false, true, true)
+				if (dummyVsArrows) {
+					o.stopMoving()
+					this.setScore()
+				}
 			}
 		}
 	}
 
+	private createScoreText(): void {
+		//Make custom text style
+		const style = new PIXI.TextStyle({
+			fill: [
+				"black",
+				"black"
+			],
+			fontFamily: "Impact, Charcoal, sans-serif",
+			fontSize: 28
+		})
+
+		this.scoreText = new PIXI.Text('Score: ' + this.points, style)
+		this.scoreText.anchor.x = -1
+		this.scoreText.anchor.y = -1
+		this.PIXI.stage.addChild(this.scoreText)
+	}
+
 	private setScore(): void {
-		this.targetDummy.timesHit ++
-		this.points += 10
-		this.scoreText.text = "Score: " + this.points
-		console.log("Score: " + this.points)
+		for (let o of this.gameObjects) {
+			//Type guarding
+			if (o instanceof TargetDummy) {
+				o.timesHit++
+				this.points += 10
+				this.scoreText.text = "Score: " + this.points
+				console.log("Score: " + this.points)
+			}
+		}
 	}
 
 	//Get instance of PIXI
@@ -169,10 +176,12 @@ class Game {
 		return this.PIXI
 	}
 
+	//Get instance of Bump
 	public getBump(): any {
 		return this.bump
 	}
 
+	//Get platforms
 	public getPlatforms(): Array<PIXI.extras.AnimatedSprite> {
 		return this.platforms
 	}

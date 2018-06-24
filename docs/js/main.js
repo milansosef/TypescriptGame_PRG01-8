@@ -43,9 +43,6 @@ var GameObject = (function () {
         }
         return this.colliderSprite;
     };
-    GameObject.prototype.getRect = function () {
-        return this.sprite.getBounds();
-    };
     GameObject.prototype.update = function () {
         this.sprite.x = this.colliderSprite.x;
         this.sprite.y = this.colliderSprite.y;
@@ -126,7 +123,7 @@ var Character = (function (_super) {
         _this.right = false;
         _this.up = false;
         _this.isOnGround = true;
-        _this.jumpHeight = 50;
+        _this.jumpHeight = 45;
         _this.gravity = 1.5;
         _this.aimAngle = 0;
         _this.isReloading = false;
@@ -148,7 +145,7 @@ var Character = (function (_super) {
     };
     Character.prototype.unsubscribe = function (o) {
     };
-    Character.prototype.onFire = function () {
+    Character.prototype.boost = function () {
         console.log("F key pressed");
         for (var _i = 0, _a = this.observers; _i < _a.length; _i++) {
             var c = _a[_i];
@@ -228,7 +225,7 @@ var Character = (function (_super) {
                 break;
             case 70:
                 if (key_state) {
-                    this.onFire();
+                    this.boost();
                 }
                 break;
         }
@@ -270,21 +267,11 @@ var Game = (function () {
     };
     Game.prototype.setup = function () {
         var _this = this;
-        var style = new PIXI.TextStyle({
-            fill: [
-                "black",
-                "black"
-            ],
-            fontFamily: "Impact, Charcoal, sans-serif",
-            fontSize: 28
-        });
-        this.scoreText = new PIXI.Text('Score: ' + this.points, style);
-        this.scoreText.anchor.x = -1;
-        this.scoreText.anchor.y = -1;
-        this.PIXI.stage.addChild(this.scoreText);
+        this.createScoreText();
         this.character = new Character();
         this.targetDummy = new TargetDummy();
-        this.arrows = new Array();
+        this.gameObjects = new Array();
+        this.gameObjects.push(this.character, this.targetDummy);
         this.tiledMap.addChild(new PIXI.extras.TiledMap("./assets/tileMaps/map_x64.tmx"));
         for (var _i = 0, _a = this.tiledMap.children[0].children[2].children; _i < _a.length; _i++) {
             var t = _a[_i];
@@ -293,26 +280,24 @@ var Game = (function () {
         this.PIXI.ticker.add(function () { return _this.gameLoop(); });
     };
     Game.prototype.gameLoop = function () {
-        this.character.update();
-        this.targetDummy.update();
+        for (var _i = 0, _a = this.gameObjects; _i < _a.length; _i++) {
+            var o = _a[_i];
+            o.update();
+        }
         this.checkCharacterVsPlatforms();
         this.checkDummyVsArrows();
         this.checkPlatformsVsArrows();
-        for (var _i = 0, _a = this.arrows; _i < _a.length; _i++) {
-            var a = _a[_i];
-            a.update();
-        }
         this.PIXI.renderer.render(this.PIXI.stage);
     };
     Game.prototype.addArrow = function (a) {
-        this.arrows.push(a);
+        this.gameObjects.push(a);
     };
     Game.prototype.removeArrow = function (a) {
         console.log("Remove arrow");
         this.character.unsubscribe(a);
-        var index = this.arrows.indexOf(a);
+        var index = this.gameObjects.indexOf(a);
         if (index !== -1) {
-            this.arrows.splice(index, 1);
+            this.gameObjects.splice(index, 1);
         }
     };
     Game.prototype.checkCharacterVsPlatforms = function () {
@@ -328,30 +313,53 @@ var Game = (function () {
     Game.prototype.checkPlatformsVsArrows = function () {
         for (var _i = 0, _a = this.platforms; _i < _a.length; _i++) {
             var p = _a[_i];
-            for (var _b = 0, _c = this.arrows; _b < _c.length; _b++) {
-                var a = _c[_b];
-                var platformsVsArrows = this.bump.hit(p, a.getColliderSprite(), false, true, true);
-                if (platformsVsArrows) {
-                    a.stopMoving();
+            for (var _b = 0, _c = this.gameObjects; _b < _c.length; _b++) {
+                var o = _c[_b];
+                if (o instanceof Arrow) {
+                    var platformsVsArrows = this.bump.hit(p, o.getColliderSprite(), false, true, true);
+                    if (platformsVsArrows) {
+                        o.stopMoving();
+                    }
                 }
             }
         }
     };
     Game.prototype.checkDummyVsArrows = function () {
-        for (var _i = 0, _a = this.arrows; _i < _a.length; _i++) {
-            var a = _a[_i];
-            var dummyVsArrows = this.bump.hit(this.targetDummy.getColliderSprite(), a.getColliderSprite(), false, true, true);
-            if (dummyVsArrows) {
-                a.stopMoving();
-                this.setScore();
+        for (var _i = 0, _a = this.gameObjects; _i < _a.length; _i++) {
+            var o = _a[_i];
+            if (o instanceof Arrow) {
+                var dummyVsArrows = this.bump.hit(this.targetDummy.getColliderSprite(), o.getColliderSprite(), false, true, true);
+                if (dummyVsArrows) {
+                    o.stopMoving();
+                    this.setScore();
+                }
             }
         }
     };
+    Game.prototype.createScoreText = function () {
+        var style = new PIXI.TextStyle({
+            fill: [
+                "black",
+                "black"
+            ],
+            fontFamily: "Impact, Charcoal, sans-serif",
+            fontSize: 28
+        });
+        this.scoreText = new PIXI.Text('Score: ' + this.points, style);
+        this.scoreText.anchor.x = -1;
+        this.scoreText.anchor.y = -1;
+        this.PIXI.stage.addChild(this.scoreText);
+    };
     Game.prototype.setScore = function () {
-        this.targetDummy.timesHit++;
-        this.points += 10;
-        this.scoreText.text = "Score: " + this.points;
-        console.log("Score: " + this.points);
+        for (var _i = 0, _a = this.gameObjects; _i < _a.length; _i++) {
+            var o = _a[_i];
+            if (o instanceof TargetDummy) {
+                o.timesHit++;
+                this.points += 10;
+                this.scoreText.text = "Score: " + this.points;
+                console.log("Score: " + this.points);
+            }
+        }
     };
     Game.prototype.getPIXI = function () {
         return this.PIXI;
@@ -379,16 +387,16 @@ var TargetDummy = (function (_super) {
     TargetDummy.prototype.update = function () {
         switch (this.timesHit) {
             case 0:
-                this.behavior = new Idle(this);
+                this.dummyBehaviour = new Idle(this);
                 break;
             case 1:
-                this.behavior = new Afraid(this);
+                this.dummyBehaviour = new Afraid(this);
                 break;
             case 2:
-                this.behavior = new Crying(this);
+                this.dummyBehaviour = new Crying(this);
                 break;
         }
-        this.behavior.performBehavior();
+        this.dummyBehaviour.performBehavior();
     };
     return TargetDummy;
 }(GameObject));

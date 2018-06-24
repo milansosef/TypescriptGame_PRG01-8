@@ -1,5 +1,5 @@
 class TargetDummy extends GameObject {
-	public behavior: Behavior
+	public dummyBehaviour: dummyBehaviour
 	public timesHit: number = 0
 
 	constructor() {
@@ -12,16 +12,16 @@ class TargetDummy extends GameObject {
 	public update(): void {
 		switch (this.timesHit) {
 			case 0:
-				this.behavior = new Idle(this)
+				this.dummyBehaviour = new Idle(this)
 				break
 			case 1:
-				this.behavior = new Afraid(this)
+				this.dummyBehaviour = new Afraid(this)
 				break
 			case 2:
-				this.behavior = new Crying(this)
+				this.dummyBehaviour = new Crying(this)
 				break
 		}
 
-		this.behavior.performBehavior()
+		this.dummyBehaviour.performBehavior()
 	}
 }

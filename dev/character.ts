@@ -1,15 +1,14 @@
 /// <reference path="./gameObject" />
 
 class Character extends GameObject implements Subject{
-	public observers: Observer[]
+	public observers: Array<Observer>
 
 	private left: boolean = false
 	private right: boolean = false
 	private up: boolean = false
 	private isOnGround: boolean = true
-	private jumpHeight: number = 50
+	private jumpHeight: number = 45
 	private gravity: number = 1.5
-	// private frictionX: number
 
 	private aimAngle: number = 0
 	private isReloading: boolean = false
@@ -22,8 +21,6 @@ class Character extends GameObject implements Subject{
 		this.sprite.height = 200
 
 		//Set the sprites position
-		// this.object.x = Game.instance().getPIXI().stage.width / 2 - this.sprite.width / 2
-		// this.object.y = Game.instance().getPIXI().stage.height / 2 - this.sprite.height / 2
 		console.log("width", Game.instance().getPIXI().stage.width)
 		console.log("height", Game.instance().getPIXI().stage.height)
 		this.colliderSprite.position.x = 650
@@ -46,7 +43,7 @@ class Character extends GameObject implements Subject{
 		// remove o from this.observers
 	}
 
-	private onFire(): void {
+	private boost(): void {
 		console.log("F key pressed")
 		for (let c of this.observers) {
 			c.notify()
@@ -110,7 +107,7 @@ class Character extends GameObject implements Subject{
 		this.aimAngle = Math.atan2(mouseY, mouseX)
 	}
 
-	public handleCollision(collision: any, platform: any) {
+	public handleCollision(collision: any, platform: any): void {
 		if (collision) {
 			if (collision === "bottom" && this.ySpeed >= 0) {
 				// console.log("Collision at bottom")
@@ -162,7 +159,7 @@ class Character extends GameObject implements Subject{
 				break
 			case 70:
 				if (key_state) {
-					this.onFire()
+					this.boost()
 				}
 				break
 		}
