@@ -99,7 +99,7 @@ This game was made using Pixi.js, a 2d rendering library.
 
 For this game I also made a UML / class diagram.
 
-![alt text](https://drive.google.com/open?id=1hNALQPdhF5up9lZ4_mZso0Ile511ThLm)
+![UML](https://lh3.googleusercontent.com/izJpsmm6_t7z6Pe7mmTSBVe18rCatWjdAlWmA0PuS_wEv5rtrGdnLi1LYYz2Txe61R55RR9l2LJ9l16LOlWF=w1920-h853-rw)
 
 Pull request week 4 for Typescript game @BrandonYuen.
 https://github.com/BrandonYuen/PRG01-8_Game/pull/1
